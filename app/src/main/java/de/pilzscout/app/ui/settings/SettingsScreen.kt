@@ -31,6 +31,8 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.pilzscout.app.R
 import de.pilzscout.app.settings.AppLanguage
+import de.pilzscout.app.ui.pack.PackComponentsContent
+import de.pilzscout.app.ui.pack.PackInstallViewModel
 
 @Composable
 fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
@@ -65,10 +67,21 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                 LanguageOption(AppLanguage.ENGLISH, R.string.settings_language_en, language, viewModel::setLanguage)
             }
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
-            ListItem(
-                headlineContent = { Text(stringResource(R.string.settings_offline_data)) },
-                supportingContent = { Text(stringResource(R.string.settings_offline_data_summary)) },
+            Text(
+                stringResource(R.string.settings_offline_data),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             )
+            Text(
+                stringResource(R.string.settings_offline_data_summary),
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            val packViewModel: PackInstallViewModel = hiltViewModel()
+            val packState by packViewModel.state.collectAsStateWithLifecycle()
+            PackComponentsContent(packState, packViewModel, Modifier.padding(16.dp))
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
             ListItem(headlineContent = { Text(stringResource(R.string.settings_model_info)) })
             ListItem(headlineContent = { Text(stringResource(R.string.settings_about)) })
         }

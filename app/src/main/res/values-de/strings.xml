@@ -22,4 +22,41 @@
     <string name="browse_title">Entdecken</string>
     <string name="history_title">Verlauf</string>
     <string name="placeholder_coming_soon">Kommt im nächsten Build</string>
+    <string name="pack_title">Offline-Paket Deutschland</string>
+    <string name="pack_intro">PilzScout funktioniert vollständig offline. Installiere die mitgelieferten Daten einmalig; die Bestimmung ist verfügbar, sobald Klassifikator und Artendaten vorliegen. Bildpakete können im Hintergrund weiter installiert werden.</string>
+    <string name="pack_offline_note">Fotos und Ergebnisse verlassen dieses Gerät nie.</string>
+    <string name="pack_loading">Paketinformationen werden geladen…</string>
+    <string name="pack_missing_manifest">Dieser Build enthält kein Offline-Paket. Bitte den Pack-Builder ausführen und die App neu bauen.</string>
+    <string name="pack_install_all">Offline-Paket installieren</string>
+    <string name="pack_installing">Wird installiert…</string>
+    <string name="pack_install">Installieren</string>
+    <string name="pack_update">Aktualisieren</string>
+    <string name="pack_remove">Entfernen</string>
+    <string name="pack_installed">Installiert</string>
+    <string name="pack_error">Installation fehlgeschlagen: %1$s</string>
+    <string name="pack_continue">Mit der Bestimmung beginnen</string>
+    <string name="pack_continue_hint">Übrige Komponenten werden im Hintergrund weiter installiert.</string>
+    <string name="pack_notification_channel">Installation des Offline-Pakets</string>
+    <string name="pack_notification_title">Offline-Paket Deutschland wird installiert</string>
+    <string name="pack_component_model">Klassifikationsmodell</string>
+    <string name="pack_component_model_desc">Neuronales Netz zur Pilzerkennung auf dem Gerät</string>
+    <string name="pack_component_core">Artnamen, Taxonomie und Merkmale</string>
+    <string name="pack_component_core_desc">Wissenschaftliche und deutsche Namen, strukturierte Merkmale, Saisonmuster</string>
+    <string name="pack_component_wiki">Wikipedia-Beschreibungen und Vorschaubilder</string>
+    <string name="pack_component_wiki_desc">Deutsche und englische Artikelauszüge mit Quellenangabe</string>
+    <string name="pack_component_fungitastic">FungiTastic-Metadaten und Beobachtungsbilder</string>
+    <string name="pack_component_fungitastic_desc">Beispielbeobachtungen mit Habitat, Substrat, Datum und Bildbeschreibungen</string>
+    <string name="pack_component_images_hd">FungiTastic-Bilder in höherer Auflösung</string>
+    <string name="pack_component_images_hd_desc">Optionale größere Referenzfotos</string>
+
+    <string name="browse_search_hint">Art oder Namen suchen</string>
+    <string name="browse_db_missing">Die Artendaten sind noch nicht installiert. Installiere das Offline-Paket in den Einstellungen.</string>
+    <string name="browse_species_counts">%1$d Arten in Deutschland nachgewiesen · %2$d insgesamt</string>
+    <string name="species_not_in_germany">In Deutschland nicht nachgewiesen</string>
+    <string name="species_poisonous_flag">Als giftig gelistet</string>
+
+    <plurals name="photos_count">
+        <item quantity="one">%d Foto</item>
+        <item quantity="other">%d Fotos</item>
+    </plurals>
 </resources>

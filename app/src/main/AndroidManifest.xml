@@ -50,6 +50,12 @@
                 android:resource="@xml/file_paths" />
         </provider>
 
+        <!-- WorkManager foreground service must declare its type on API 34+ -->
+        <service
+            android:name="androidx.work.impl.foreground.SystemForegroundService"
+            android:foregroundServiceType="dataSync"
+            tools:node="merge" />
+
         <!-- WorkManager: disable default initializer, Hilt provides the configuration -->
         <provider
             android:name="androidx.startup.InitializationProvider"

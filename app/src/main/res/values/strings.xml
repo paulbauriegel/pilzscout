@@ -25,4 +25,43 @@
     <string name="browse_title">Browse</string>
     <string name="history_title">History</string>
     <string name="placeholder_coming_soon">Coming in the next build</string>
+    <!-- Offline pack -->
+    <string name="pack_title">Germany offline pack</string>
+    <string name="pack_intro">PilzScout works completely offline. Install the bundled data once; identification becomes available as soon as the classifier and the species data are in place. Image packages can keep installing in the background.</string>
+    <string name="pack_offline_note">Photos and results never leave this device.</string>
+    <string name="pack_loading">Loading pack information…</string>
+    <string name="pack_missing_manifest">This build contains no offline pack. Run the pack builder and rebuild the app.</string>
+    <string name="pack_install_all">Install offline pack</string>
+    <string name="pack_installing">Installing…</string>
+    <string name="pack_install">Install</string>
+    <string name="pack_update">Update</string>
+    <string name="pack_remove">Remove</string>
+    <string name="pack_installed">Installed</string>
+    <string name="pack_error">Installation failed: %1$s</string>
+    <string name="pack_continue">Start identifying</string>
+    <string name="pack_continue_hint">Remaining components keep installing in the background.</string>
+    <string name="pack_notification_channel">Offline pack installation</string>
+    <string name="pack_notification_title">Installing the Germany offline pack</string>
+    <string name="pack_component_model">Classifier model</string>
+    <string name="pack_component_model_desc">On-device neural network for mushroom recognition</string>
+    <string name="pack_component_core">Species names, taxonomy and traits</string>
+    <string name="pack_component_core_desc">Scientific and common names, structured characteristics, seasonal patterns</string>
+    <string name="pack_component_wiki">Wikipedia descriptions and thumbnails</string>
+    <string name="pack_component_wiki_desc">German and English article extracts with attribution</string>
+    <string name="pack_component_fungitastic">FungiTastic metadata and observation thumbnails</string>
+    <string name="pack_component_fungitastic_desc">Sample observations with habitat, substrate, date and captions</string>
+    <string name="pack_component_images_hd">Higher-resolution FungiTastic images</string>
+    <string name="pack_component_images_hd_desc">Optional larger reference photos</string>
+
+    <!-- Browse -->
+    <string name="browse_search_hint">Search species or name</string>
+    <string name="browse_db_missing">Species data is not installed yet. Install the offline pack in Settings.</string>
+    <string name="browse_species_counts">%1$d species recorded in Germany · %2$d in total</string>
+    <string name="species_not_in_germany">Not recorded in Germany</string>
+    <string name="species_poisonous_flag">Listed as poisonous</string>
+
+    <plurals name="photos_count">
+        <item quantity="one">%d photograph</item>
+        <item quantity="other">%d photographs</item>
+    </plurals>
 </resources>
