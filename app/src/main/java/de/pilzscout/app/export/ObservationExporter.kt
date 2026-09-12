@@ -130,7 +130,7 @@ class ObservationExporter @Inject constructor(
             descriptor = runCatching { ConfidenceDescriptor.valueOf(o.descriptor) }.getOrDefault(ConfidenceDescriptor.UNCERTAIN),
             contextualInputs = ExportContext(contextual?.month, contextual?.locationUsed ?: o.locationIncluded, contextual?.germanyFilter ?: true, contextual?.seasonPriorWeight ?: 0f, o.nPhotos),
             comparison = comparison,
-            model = ExportModel(o.modelVersion, fusion?.let { null }, o.modelPrecision, null, o.totalInferenceMs),
+            model = ExportModel(o.modelVersion, contextual?.modelName, o.modelPrecision, contextual?.modelInputSize, o.totalInferenceMs),
             userCorrection = o.correctedSpeciesId?.let { ExportCorrection(ref(it), iso(o.correctedAt ?: o.createdAt)) },
             userConfirmed = o.userConfirmed,
             mode = o.mode,

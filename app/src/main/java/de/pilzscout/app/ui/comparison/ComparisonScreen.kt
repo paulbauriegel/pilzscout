@@ -229,7 +229,8 @@ private fun StatementColumn(title: String, statements: List<Statement>, modifier
         if (statements.isEmpty()) Text(stringResource(R.string.state_insufficient), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.outline)
         statements.forEach { s ->
             Text(s.text, style = MaterialTheme.typography.bodySmall)
-            Text(basisLabel(s.basis) + (s.source?.let { src -> if (src.startsWith("wiki:")) " · Wikipedia" else "" } ?: ""), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            val suffix = s.source?.let { src -> if (src.startsWith("wiki:") && s.basis != Basis.WIKIPEDIA) " · Wikipedia" else "" } ?: ""
+            Text(basisLabel(s.basis) + suffix, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
         }
     }
 }

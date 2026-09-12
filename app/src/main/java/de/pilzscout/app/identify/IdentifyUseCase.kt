@@ -31,6 +31,9 @@ data class ContextualInputs(
     val germanyFilter: Boolean,
     val seasonPriorWeight: Float,
     val nPhotos: Int,
+    val modelName: String? = null,
+    val modelInputSize: Int? = null,
+    val modelAccelerator: String? = null,
 )
 
 /** Runs the whole pipeline for a draft and stores the observation. Returns the observation id. */
@@ -95,7 +98,10 @@ class IdentifyUseCase @Inject constructor(
             seasonPriorWeight = if (prior != null) Fusion.DEFAULT_SEASON_WEIGHT else 0f,
             recommendedView = recommended,
         )
-        val contextual = ContextualInputs(month, draft.includeLocation && draft.location != null, true, fusion.seasonPriorWeight, draft.photos.size)
+        val contextual = ContextualInputs(
+            month, draft.includeLocation && draft.location != null, true, fusion.seasonPriorWeight, draft.photos.size,
+            classifier.info.name, classifier.info.inputSize, classifier.info.accelerator,
+        )
         val location = draft.location?.takeIf { draft.includeLocation }
 
         val observation = ObservationEntity(
