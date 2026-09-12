@@ -82,8 +82,34 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
             val packState by packViewModel.state.collectAsStateWithLifecycle()
             PackComponentsContent(packState, packViewModel, Modifier.padding(16.dp))
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
-            ListItem(headlineContent = { Text(stringResource(R.string.settings_model_info)) })
-            ListItem(headlineContent = { Text(stringResource(R.string.settings_about)) })
+            Text(stringResource(R.string.settings_model_info), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+            val classifier by viewModel.classifier.collectAsStateWithLifecycle()
+            val useGpu by viewModel.useGpu.collectAsStateWithLifecycle()
+            Text(
+                when (val c = classifier) {
+                    is de.pilzscout.app.ml.ClassifierState.Ready -> stringResource(R.string.settings_model_ready, c.info.version, c.info.name, c.info.precision, c.info.inputSize, c.info.numClasses, c.info.accelerator)
+                    is de.pilzscout.app.ml.ClassifierState.Failed -> stringResource(R.string.identify_model_failed, c.message)
+                    de.pilzscout.app.ml.ClassifierState.Loading -> stringResource(R.string.settings_model_not_loaded)
+                    de.pilzscout.app.ml.ClassifierState.NotInstalled -> stringResource(R.string.identify_model_missing)
+                },
+                style = MaterialTheme.typography.bodyMedium,
+                modifier = Modifier.padding(horizontal = 16.dp),
+            )
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.settings_gpu), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.settings_gpu_summary), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                androidx.compose.material3.Switch(checked = useGpu, onCheckedChange = viewModel::setUseGpu)
+            }
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            Text(stringResource(R.string.settings_about), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
+            Text(stringResource(R.string.settings_about_body), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 16.dp))
+            androidx.compose.foundation.layout.Spacer(Modifier.padding(16.dp))
         }
     }
 }

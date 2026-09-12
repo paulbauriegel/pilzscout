@@ -259,4 +259,11 @@
     <string name="history_correct_title">Correct the identification</string>
     <string name="history_correct_hint">Pick the species you have verified. The original prediction stays in the record for evaluation.</string>
     <string name="history_confirm_as_is">Confirm the prediction as correct</string>
+    <string name="result_corrected_title">You corrected this identification</string>
+    <string name="result_corrected_body">Your correction: %1$s (%2$s). The original prediction below is kept for evaluation.</string>
+    <string name="settings_model_ready">Version %1$s · %2$s · %3$s · input %4$d px · %5$d classes · %6$s</string>
+    <string name="settings_model_not_loaded">The classifier loads with the first identification.</string>
+    <string name="settings_gpu">Use GPU acceleration</string>
+    <string name="settings_gpu_summary">Experimental. Falls back to CPU if the model cannot be compiled for the GPU.</string>
+    <string name="settings_about_body">PilzScout is an offline mushroom identification and classifier-evaluation app for Germany. Never eat a mushroom based on an app result.\n\nData: FungiTastic (Picek et al., CVPRW 2025; Atlas of Danish Fungi), CC BY 4.0. Wikipedia article extracts and thumbnails, CC BY-SA 4.0, with per-article revision references. Species presence in Germany from GBIF occurrence data. Classifier: DINOv3 ViT-S/16 fine-tuned on FungiTastic (see model information for the version).</string>
 </resources>

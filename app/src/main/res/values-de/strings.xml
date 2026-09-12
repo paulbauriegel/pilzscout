@@ -248,4 +248,11 @@
     <string name="history_correct_title">Bestimmung korrigieren</string>
     <string name="history_correct_hint">Wähle die Art, die du überprüft hast. Die ursprüngliche Vorhersage bleibt zur Auswertung erhalten.</string>
     <string name="history_confirm_as_is">Vorhersage als richtig bestätigen</string>
+    <string name="result_corrected_title">Du hast diese Bestimmung korrigiert</string>
+    <string name="result_corrected_body">Deine Korrektur: %1$s (%2$s). Die ursprüngliche Vorhersage darunter bleibt zur Auswertung erhalten.</string>
+    <string name="settings_model_ready">Version %1$s · %2$s · %3$s · Eingabe %4$d px · %5$d Klassen · %6$s</string>
+    <string name="settings_model_not_loaded">Der Klassifikator wird bei der ersten Bestimmung geladen.</string>
+    <string name="settings_gpu">GPU-Beschleunigung nutzen</string>
+    <string name="settings_gpu_summary">Experimentell. Fällt auf die CPU zurück, wenn das Modell nicht für die GPU kompiliert werden kann.</string>
+    <string name="settings_about_body">PilzScout ist eine Offline-App zur Pilzbestimmung und Klassifikator-Auswertung für Deutschland. Iss niemals einen Pilz aufgrund eines App-Ergebnisses.\n\nDaten: FungiTastic (Picek et al., CVPRW 2025; Atlas der dänischen Pilze), CC BY 4.0. Wikipedia-Artikelauszüge und Vorschaubilder, CC BY-SA 4.0, mit Versionsangabe je Artikel. Nachweise in Deutschland aus GBIF-Vorkommensdaten. Klassifikator: DINOv3 ViT-S/16, auf FungiTastic feinabgestimmt (Version siehe Modellinformationen).</string>
 </resources>

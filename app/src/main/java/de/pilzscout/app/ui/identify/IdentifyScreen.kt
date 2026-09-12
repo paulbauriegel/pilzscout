@@ -6,6 +6,8 @@ import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.animation.animateContentSize
+import androidx.compose.animation.core.animateFloatAsState
+import androidx.compose.ui.draw.scale
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
@@ -177,10 +179,17 @@ private fun PhotoSlotRow(photos: List<DraftPhoto>, onSlotClick: (ViewType) -> Un
     Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.spacedBy(10.dp)) {
         ViewType.entries.forEach { view ->
             val photo = photos.firstOrNull { it.viewType == view }
+            // Expressive acknowledgement: a freshly captured slot pops in with a bouncy spring.
+            val pop by animateFloatAsState(
+                targetValue = if (photo != null) 1f else 0.92f,
+                animationSpec = MaterialTheme.motionScheme.defaultSpatialSpec(),
+                label = "slot-pop",
+            )
             Column(Modifier.weight(1f), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.spacedBy(6.dp)) {
                 Box(
                     Modifier
                         .size(76.dp)
+                        .scale(pop)
                         .animateContentSize()
                         .clip(view.slotShape())
                         .background(if (photo != null) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerHigh)

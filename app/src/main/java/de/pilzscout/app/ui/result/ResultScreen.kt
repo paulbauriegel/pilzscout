@@ -40,7 +40,6 @@ import androidx.compose.material3.LinearProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
-import androidx.compose.material3.SuggestionChip
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.TopAppBarDefaults
@@ -138,8 +137,18 @@ fun ResultScreen(
                     Text(stringResource(R.string.result_confidence, (primary.prob * 100).roundToInt()), style = MaterialTheme.typography.titleLarge)
                     Text(pluralStringResource(R.plurals.result_based_on, obs.observation.nPhotos, obs.observation.nPhotos), style = MaterialTheme.typography.bodyMedium)
                     Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        SuggestionChip(onClick = {}, label = { Text(descriptorLabel(fusion.descriptor)) })
-                        SuggestionChip(onClick = {}, icon = { Icon(Icons.Outlined.CloudOff, null, Modifier.size(18.dp)) }, label = { Text("Offline") })
+                        Badge(descriptorLabel(fusion.descriptor))
+                        Badge("Offline", Icons.Outlined.CloudOff)
+                    }
+                }
+            }
+
+            obs.observation.correctedSpeciesId?.let { correctedId ->
+                val corrected = state.species[correctedId]
+                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
+                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                        Text(stringResource(R.string.result_corrected_title), style = MaterialTheme.typography.titleMedium)
+                        Text(stringResource(R.string.result_corrected_body, corrected.displayName(), corrected?.binomial ?: correctedId), style = MaterialTheme.typography.bodyMedium)
                     }
                 }
             }
@@ -222,6 +231,22 @@ fun ResultScreen(
                 }
             }
         }
+    }
+}
+
+/** Small tonal badge that always keeps on-container contrast, unlike an outlined chip on a coloured card. */
+@Composable
+private fun Badge(text: String, icon: androidx.compose.ui.graphics.vector.ImageVector? = null) {
+    Row(
+        Modifier
+            .clip(MaterialTheme.shapes.small)
+            .background(MaterialTheme.colorScheme.onPrimaryContainer.copy(alpha = 0.12f))
+            .padding(horizontal = 10.dp, vertical = 6.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(6.dp),
+    ) {
+        if (icon != null) Icon(icon, contentDescription = null, modifier = Modifier.size(16.dp), tint = MaterialTheme.colorScheme.onPrimaryContainer)
+        Text(text, style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onPrimaryContainer)
     }
 }
 
