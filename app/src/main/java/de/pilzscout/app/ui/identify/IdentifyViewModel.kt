@@ -50,5 +50,6 @@ class IdentifyViewModel @Inject constructor(
     fun remove(photoId: String) = drafts.remove(photoId)
     fun move(photoId: String, delta: Int) = drafts.move(photoId, delta)
     fun setViewType(photoId: String, viewType: ViewType) = drafts.setViewType(photoId, viewType)
+    fun setLanguage(language: String) = drafts.setLanguage(language)
     fun clear() = drafts.clear()
 }

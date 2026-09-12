@@ -9,7 +9,7 @@ from pathlib import Path
 
 from .config import Config
 
-SIZE_BUDGET_MB = {"model": 95, "core": 12, "wiki": 25, "fungitastic": 70, "images-hd": 400}
+SIZE_BUDGET_MB = {"model": 95, "core": 30, "wiki": 40, "fungitastic": 130, "images-hd": 400}
 
 
 @dataclass

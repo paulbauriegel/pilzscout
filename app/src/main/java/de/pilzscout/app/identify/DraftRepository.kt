@@ -18,6 +18,8 @@ data class Draft(
     val location: ApproxLocation? = null,
     val includeLocation: Boolean = true,
     val locationRequested: Boolean = false,
+    /** Content language ("de" or "en") at the time of identification; used for the stored comparison texts. */
+    val language: String = "en",
 ) {
     val capturedViews: Set<ViewType> get() = photos.map { it.viewType }.toSet()
     fun nextSuggestedView(): ViewType? = ViewType.entries.firstOrNull { it !in capturedViews }
@@ -56,10 +58,12 @@ class DraftRepository @Inject constructor() {
         d.copy(photos = d.photos.map { if (it.id == photoId) it.copy(viewType = viewType) else it })
     }
 
+    fun setLanguage(language: String) = _draft.update { it.copy(language = language) }
+
     fun setLocation(location: ApproxLocation?) = _draft.update { it.copy(location = location, locationRequested = true) }
     fun setIncludeLocation(include: Boolean) = _draft.update { it.copy(includeLocation = include) }
 
     fun clear() {
-        _draft.value = Draft()
+        _draft.value = Draft(language = _draft.value.language)
     }
 }

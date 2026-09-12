@@ -68,6 +68,7 @@ import de.pilzscout.app.R
 import de.pilzscout.app.identify.DraftPhoto
 import de.pilzscout.app.ml.ClassifierState
 import de.pilzscout.app.ui.components.TabScaffold
+import de.pilzscout.app.ui.components.contentLanguage
 import de.pilzscout.core.model.ViewType
 import java.util.Date
 
@@ -81,6 +82,8 @@ fun IdentifyScreen(
     val draft by viewModel.draft.collectAsStateWithLifecycle()
     val classifier by viewModel.classifierState.collectAsStateWithLifecycle()
     val context = LocalContext.current
+    val lang = contentLanguage()
+    LaunchedEffect(lang) { viewModel.setLanguage(lang) }
 
     val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted ->
         if (granted) viewModel.fetchLocation() else viewModel.removeLocation()

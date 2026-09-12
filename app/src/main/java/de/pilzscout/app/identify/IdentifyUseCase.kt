@@ -1,5 +1,6 @@
 package de.pilzscout.app.identify
 
+import de.pilzscout.app.compare.CompareUseCase
 import de.pilzscout.app.data.history.CandidateEntity
 import de.pilzscout.app.data.history.HistoryRepository
 import de.pilzscout.app.data.history.ObservationEntity
@@ -38,6 +39,7 @@ class IdentifyUseCase @Inject constructor(
     private val species: SpeciesRepository,
     private val photoStore: PhotoStore,
     private val history: HistoryRepository,
+    private val compare: CompareUseCase,
     private val json: Json,
 ) {
     suspend fun run(draft: Draft, onProgress: suspend (done: Int, total: Int) -> Unit = { _, _ -> }): String = withContext(Dispatchers.Default) {
@@ -74,7 +76,14 @@ class IdentifyUseCase @Inject constructor(
             val photoTop = Fusion.topK(probs, TOP_PHOTO).map { Candidate(it, ids[it], probs[it]) }
             PhotoPrediction(photo.viewType, i, photoTop, Descriptors.agreement(photoTop, primary.classIndex), timings[i])
         }
-        val recommended = RecommendationEngine.recommend(draft.capturedViews, descriptor, differingFeatures = emptySet())
+        // Offline comparison of primary vs. top alternative: stored for export and used for the photo recommendation.
+        val photoRanking = photoPredictions.groupBy { it.viewType }.mapValues { (_, ps) -> ps.flatMap { p -> p.top.mapNotNull { it.speciesId } }.distinct() }
+        val comparison = primary.speciesId?.let { pid ->
+            alternatives.firstOrNull()?.speciesId?.let { aid ->
+                runCatching { compare.compare(pid, aid, draft.language, draft.capturedViews, photoRanking, month) }.getOrNull()
+            }
+        }
+        val recommended = RecommendationEngine.recommend(draft.capturedViews, descriptor, differingFeatures = comparison?.differingFeatures ?: emptySet())
         val fusion = FusionResult(
             combined = top,
             descriptor = descriptor,
@@ -109,7 +118,7 @@ class IdentifyUseCase @Inject constructor(
             correctedAt = null,
             leadPhotoId = "$observationId-0",
             fusionJson = json.encodeToString(FusionResult.serializer(), fusion),
-            comparisonJson = "{}",
+            comparisonJson = comparison?.let { json.encodeToString(de.pilzscout.core.compare.ComparisonResult.serializer(), it) } ?: "{}",
             contextualJson = json.encodeToString(ContextualInputs.serializer(), contextual),
         )
         val photos = stored.mapIndexed { i, s ->

@@ -79,6 +79,7 @@ fun ResultScreen(
     observationId: String,
     onBack: () -> Unit,
     onCompare: (alternativeSpeciesId: String) -> Unit,
+    onOpenSpecies: (speciesId: String) -> Unit = {},
     onAddPhoto: (ViewType) -> Unit,
     onNewObservation: () -> Unit,
     viewModel: ResultViewModel = hiltViewModel<ResultViewModel, ResultViewModel.Factory> { it.create(observationId) },
@@ -112,7 +113,10 @@ fun ResultScreen(
             verticalArrangement = Arrangement.spacedBy(16.dp),
         ) {
             // Hero
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer)) {
+            Card(
+                colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.primaryContainer),
+                onClick = { primary.speciesId?.let(onOpenSpecies) },
+            ) {
                 Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
                     Row(horizontalArrangement = Arrangement.spacedBy(16.dp), verticalAlignment = Alignment.CenterVertically) {
                         if (lead != null) {

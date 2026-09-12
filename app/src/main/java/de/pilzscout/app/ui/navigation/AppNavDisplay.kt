@@ -26,7 +26,11 @@ import de.pilzscout.app.R
 import androidx.hilt.navigation.compose.hiltViewModel
 import de.pilzscout.app.ui.analysis.AnalysisScreen
 import de.pilzscout.app.ui.browse.BrowseScreen
+import de.pilzscout.app.ui.browse.BrowseSource
+import de.pilzscout.app.ui.species.FtObservationScreen
+import de.pilzscout.app.ui.species.SpeciesDetailScreen
 import de.pilzscout.app.ui.camera.CameraScreen
+import de.pilzscout.app.ui.comparison.ComparisonScreen
 import de.pilzscout.app.ui.result.ResultScreen
 import de.pilzscout.app.ui.history.HistoryScreen
 import de.pilzscout.app.ui.identify.IdentifyScreen
@@ -80,7 +84,24 @@ fun AppNavDisplay() {
                         onIdentify = { nav.push(AnalysisKey) },
                     )
                 }
-                entry<BrowseKey> { BrowseScreen(onOpenSettings = { nav.push(SettingsKey) }) }
+                entry<BrowseKey> {
+                    BrowseScreen(
+                        onOpenSettings = { nav.push(SettingsKey) },
+                        onOpenSpecies = { id, source -> nav.push(SpeciesDetailKey(id, source.name)) },
+                        onOpenObservation = { id -> nav.push(FtObservationKey(id)) },
+                    )
+                }
+                entry<SpeciesDetailKey> { key ->
+                    SpeciesDetailScreen(
+                        speciesId = key.speciesId,
+                        initialSource = runCatching { BrowseSource.valueOf(key.source) }.getOrDefault(BrowseSource.FUNGITASTIC),
+                        onBack = { nav.pop() },
+                        onOpenObservation = { id -> nav.push(FtObservationKey(id)) },
+                    )
+                }
+                entry<FtObservationKey> { key ->
+                    FtObservationScreen(observationId = key.observationId, onBack = { nav.pop() }, onOpenSpecies = { id -> nav.push(SpeciesDetailKey(id, BrowseSource.FUNGITASTIC.name)) })
+                }
                 entry<HistoryKey> { HistoryScreen(onOpenSettings = { nav.push(SettingsKey) }) }
                 entry<SettingsKey> { SettingsScreen(onBack = { nav.pop() }) }
                 entry<CameraKey> { key ->
@@ -101,11 +122,15 @@ fun AppNavDisplay() {
                         onBack = { nav.pop() },
                     )
                 }
+                entry<ComparisonKey> { key ->
+                    ComparisonScreen(observationId = key.observationId, alternativeId = key.alternativeSpeciesId, onBack = { nav.pop() })
+                }
                 entry<ResultKey> { key ->
                     ResultScreen(
                         observationId = key.observationId,
                         onBack = { nav.pop() },
                         onCompare = { alt -> nav.push(ComparisonKey(key.observationId, alt)) },
+                        onOpenSpecies = { id -> nav.push(SpeciesDetailKey(id, BrowseSource.WIKIPEDIA.name)) },
                         onAddPhoto = { view -> nav.popToRoot(); nav.push(CameraKey(view)) },
                         onNewObservation = { drafts.drafts.clear(); nav.popToRoot() },
                     )

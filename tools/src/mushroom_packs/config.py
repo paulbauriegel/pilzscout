@@ -32,7 +32,7 @@ class Config:
     gbif_rps: float = float(os.environ.get("PACKS_GBIF_RPS", "8"))
 
     # Wikipedia
-    wiki_rps: float = float(os.environ.get("PACKS_WIKI_RPS", "8"))
+    wiki_rps: float = float(os.environ.get("PACKS_WIKI_RPS", "30"))
     user_agent: str = os.environ.get(
         "PACKS_USER_AGENT",
         "PilzScoutPackBuilder/0.1 (https://github.com/pilzscout; offline mushroom app data prep)",
