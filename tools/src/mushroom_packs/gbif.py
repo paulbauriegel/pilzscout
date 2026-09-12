@@ -38,6 +38,10 @@ def run(cfg: Config, limit: int | None = None) -> pd.DataFrame:
         path = cfg.cache_dir / "gbif" / f"{row.id}.json"
         rows.append(cached_json(path, lambda: lookup(client, row.binomial)))
     df = pd.DataFrame(rows)
+    # A HIGHERRANK match means GBIF only knows the genus; the count would describe the genus, not the species.
+    higher = df["match_type"] == "HIGHERRANK"
+    df.loc[higher, "gbif_key"] = None
+    df.loc[higher, "de_occurrences"] = 0
     df["in_germany"] = (df["de_occurrences"] >= cfg.gbif_min_de_occurrences).astype(int)
     out = cfg.cache_dir / "gbif.parquet"
     df.to_parquet(out, index=False)

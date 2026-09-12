@@ -84,7 +84,15 @@ interface TraitDao {
 
     @Query("SELECT * FROM species_stats WHERE species_id IN (:ids)")
     suspend fun statsFor(ids: List<String>): List<SpeciesStatsEntity>
+
+    @Query("SELECT species_id, month_hist_json FROM species_stats")
+    suspend fun allMonthHistograms(): List<MonthHistRow>
 }
+
+data class MonthHistRow(
+    @androidx.room.ColumnInfo(name = "species_id") val speciesId: String,
+    @androidx.room.ColumnInfo(name = "month_hist_json") val monthHistJson: String,
+)
 
 @Dao
 interface WikiDao {

@@ -41,6 +41,13 @@ class TopLevelBackStack(private val startKey: TopLevelKey) {
         rebuild()
     }
 
+    /** Clears the current tab down to its root destination. */
+    fun popToRoot() {
+        val current = stacks.getValue(topLevelKey)
+        while (current.size > 1) current.removeAt(current.lastIndex)
+        rebuild()
+    }
+
     fun pop() {
         val current = stacks.getValue(topLevelKey)
         current.removeLastOrNull()

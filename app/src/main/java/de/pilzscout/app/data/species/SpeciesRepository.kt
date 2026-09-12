@@ -80,6 +80,46 @@ class SpeciesRepository @Inject constructor(
         }
     }
 
+    /**
+     * Per-class prior for [month] built from FungiTastic month histograms (null when the stats table is empty).
+     * Cached per opened database and month.
+     */
+    suspend fun monthPrior(numClasses: Int, month: Int): FloatArray? = maskMutex.withLock {
+        val current = db()
+        cachedPrior?.takeIf { it.first === current && it.second == month }?.third ?: run {
+            val stats = current.traitDao().allMonthHistograms()
+            if (stats.isEmpty()) return@withLock null
+            val index = classIndexToIdUnlocked(current, numClasses)
+            val byId = stats.associate { it.speciesId to it.monthHistJson }
+            val hist = arrayOfNulls<IntArray>(numClasses)
+            for (i in 0 until numClasses) {
+                val idStr = index[i] ?: continue
+                val raw = byId[idStr] ?: continue
+                hist[i] = raw.trim('[', ']').split(',').mapNotNull { it.trim().toIntOrNull() }.toIntArray().takeIf { it.size == 12 }
+            }
+            val prior = de.pilzscout.core.identify.Fusion.monthPrior(hist, month)
+            cachedPrior = Triple(current, month, prior)
+            prior
+        }
+    }
+
+    private var cachedPrior: Triple<SpeciesDatabase, Int, FloatArray>? = null
+
+    private suspend fun classIndexToIdUnlocked(current: SpeciesDatabase, numClasses: Int): Array<String?> {
+        cachedIndex?.takeIf { it.first === current }?.let { return it.second }
+        val mask = BooleanArray(numClasses)
+        val ids = arrayOfNulls<String>(numClasses)
+        current.speciesDao().classIndexTable().forEach { row ->
+            if (row.modelClassIndex in 0 until numClasses) {
+                mask[row.modelClassIndex] = row.inGermany == 1
+                ids[row.modelClassIndex] = row.id
+            }
+        }
+        cachedMask = current to mask
+        cachedIndex = current to ids
+        return ids
+    }
+
     companion object {
         /** Lower-case, strip diacritics, fold German umlauts and ß the way tools/ does when building species_search. */
         fun normalize(text: String): String {

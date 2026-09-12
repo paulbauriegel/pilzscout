@@ -64,4 +64,99 @@
         <item quantity="one">%d photograph</item>
         <item quantity="other">%d photographs</item>
     </plurals>
+    <!-- Identify -->
+    <string name="identify_new_observation">New observation</string>
+    <string name="identify_take_photo">Take photo</string>
+    <string name="identify_import">From gallery</string>
+    <string name="identify_suggested_views">Suggested views</string>
+    <string name="identify_hint_flexible">One photo is enough to start. More views make the result more reliable.</string>
+    <string name="view_cap">Cap from above</string>
+    <string name="view_underside">Underside with gills or pores</string>
+    <string name="view_stem_base">Complete stem and base</string>
+    <string name="view_habitat">Mushroom in its habitat</string>
+    <string name="view_cap_short">Cap</string>
+    <string name="view_underside_short">Underside</string>
+    <string name="view_stem_base_short">Stem and base</string>
+    <string name="view_habitat_short">Habitat</string>
+    <string name="identify_review">Your photos</string>
+    <string name="identify_retake">Retake</string>
+    <string name="identify_remove">Remove</string>
+    <string name="identify_move_left">Move earlier</string>
+    <string name="identify_move_right">Move later</string>
+    <string name="identify_add_view">Add another view</string>
+    <string name="identify_change_view">Change view type</string>
+    <string name="identify_context_date">%1$s</string>
+    <string name="identify_location_pending">Approximate location…</string>
+    <string name="identify_location_unavailable">No location</string>
+    <string name="identify_location_add">Add approximate location</string>
+    <string name="identify_location_remove">Remove location</string>
+    <string name="identify_action">Identify mushroom</string>
+    <string name="identify_model_missing">The classifier is not installed.</string>
+    <string name="identify_model_failed">The classifier could not be loaded: %1$s</string>
+    <string name="camera_permission_needed">Camera access is needed to photograph the mushroom.</string>
+    <string name="camera_permission_grant">Allow camera</string>
+    <string name="camera_capture">Capture</string>
+    <string name="camera_flip">Switch camera</string>
+    <string name="camera_hint_for_view">Now: %1$s</string>
+    <string name="camera_error">Camera error: %1$s</string>
+
+    <!-- Analysis -->
+    <string name="analysis_title">Combining your observation</string>
+    <plurals name="analysis_combining">
+        <item quantity="one">One photo, date and approximate location are being combined into one result.</item>
+        <item quantity="other">%d photos, date and approximate location are being combined into one result.</item>
+    </plurals>
+    <plurals name="analysis_combining_no_location">
+        <item quantity="one">One photo and the date are being combined into one result.</item>
+        <item quantity="other">%d photos and the date are being combined into one result.</item>
+    </plurals>
+    <string name="analysis_offline">Photographs stay on this device.</string>
+    <string name="analysis_progress">Photo %1$d of %2$d</string>
+    <string name="analysis_failed">Identification failed: %1$s</string>
+    <string name="analysis_retry">Try again</string>
+
+    <!-- Result -->
+    <string name="result_title">Result</string>
+    <string name="result_likely">Likely: %1$s</string>
+    <string name="result_confidence">%1$d%% combined confidence</string>
+    <plurals name="result_based_on">
+        <item quantity="one">Based on one photograph</item>
+        <item quantity="other">Based on %d photographs</item>
+    </plurals>
+    <string name="descriptor_strong">Strong candidate</string>
+    <string name="descriptor_uncertain">Uncertain</string>
+    <string name="descriptor_several">Several plausible matches</string>
+    <string name="result_alternatives">Alternative candidates</string>
+    <string name="result_compare_with">Compare with %1$s</string>
+    <string name="result_distribution">Combined confidence distribution</string>
+    <string name="result_safety_title">Safety note</string>
+    <string name="result_safety_body">This is an automated suggestion, not an identification by an expert. Never eat a mushroom based on an app result. Poisonous look-alikes exist for many species.</string>
+    <string name="result_poisonous_warning">The primary candidate is listed as poisonous.</string>
+    <string name="result_recommend_title">Recommended additional photograph</string>
+    <string name="result_recommend_body">A photo of the %1$s would help to separate the candidates.</string>
+    <string name="result_recommend_action">Add this photo</string>
+    <string name="result_saved">Automatically saved locally</string>
+    <string name="result_photo_evidence">Photo evidence</string>
+    <string name="result_model_info">Model information</string>
+    <string name="result_new">New observation</string>
+    <string name="evidence_view">View: %1$s</string>
+    <string name="evidence_top">Top candidate: %1$s</string>
+    <string name="evidence_confidence">%1$d%% individual confidence</string>
+    <string name="evidence_supports">Supports the combined result</string>
+    <string name="evidence_partial">Partly consistent with the combined result</string>
+    <string name="evidence_conflicts">Conflicts with the combined result</string>
+    <string name="evidence_others">Other leading candidates: %1$s</string>
+    <string name="evidence_how_combined">How the predictions were combined</string>
+    <string name="evidence_how_combined_body">Each photo’s probabilities are multiplied together, species not recorded in Germany are excluded, and the season of the observation is used as a mild prior.</string>
+    <string name="evidence_masked">%1$d of %2$d species were excluded because they are not recorded in Germany.</string>
+    <string name="model_info_version">Model version</string>
+    <string name="model_info_name">Architecture</string>
+    <string name="model_info_precision">Precision</string>
+    <string name="model_info_input">Input size</string>
+    <string name="model_info_duration">Inference duration</string>
+    <string name="model_info_per_photo">%1$s: %2$d ms</string>
+    <string name="model_info_total">Total: %1$d ms</string>
+    <string name="unknown_species">Unknown species</string>
+    <string name="scientific_name_only">%1$s</string>
+    <string name="common_name_missing">No common name</string>
 </resources>

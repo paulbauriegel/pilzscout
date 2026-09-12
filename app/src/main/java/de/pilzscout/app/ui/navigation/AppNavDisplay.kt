@@ -23,7 +23,11 @@ import androidx.navigation3.runtime.entryProvider
 import androidx.navigation3.runtime.rememberSaveableStateHolderNavEntryDecorator
 import androidx.navigation3.ui.NavDisplay
 import de.pilzscout.app.R
+import androidx.hilt.navigation.compose.hiltViewModel
+import de.pilzscout.app.ui.analysis.AnalysisScreen
 import de.pilzscout.app.ui.browse.BrowseScreen
+import de.pilzscout.app.ui.camera.CameraScreen
+import de.pilzscout.app.ui.result.ResultScreen
 import de.pilzscout.app.ui.history.HistoryScreen
 import de.pilzscout.app.ui.identify.IdentifyScreen
 import de.pilzscout.app.ui.settings.SettingsScreen
@@ -39,6 +43,7 @@ private val tabs = listOf(
 @Composable
 fun AppNavDisplay() {
     val nav = remember { TopLevelBackStack(IdentifyKey) }
+    val drafts: NavDraftAccess = hiltViewModel()
     val current = nav.backStack.lastOrNull()
     val showBottomBar = current is TopLevelKey
 
@@ -68,11 +73,51 @@ fun AppNavDisplay() {
                 rememberViewModelStoreNavEntryDecorator(),
             ),
             entryProvider = entryProvider {
-                entry<IdentifyKey> { IdentifyScreen(onOpenSettings = { nav.push(SettingsKey) }) }
+                entry<IdentifyKey> {
+                    IdentifyScreen(
+                        onOpenSettings = { nav.push(SettingsKey) },
+                        onOpenCamera = { view, replaceId -> nav.push(CameraKey(view, replaceId)) },
+                        onIdentify = { nav.push(AnalysisKey) },
+                    )
+                }
                 entry<BrowseKey> { BrowseScreen(onOpenSettings = { nav.push(SettingsKey) }) }
                 entry<HistoryKey> { HistoryScreen(onOpenSettings = { nav.push(SettingsKey) }) }
                 entry<SettingsKey> { SettingsScreen(onBack = { nav.pop() }) }
+                entry<CameraKey> { key ->
+                    val captureFile = remember(key) { drafts.photoStore.newCaptureFile() }
+                    CameraScreen(
+                        viewType = key.viewType,
+                        captureFile = captureFile,
+                        onCaptured = { file ->
+                            if (key.replacePhotoId != null) drafts.drafts.replace(key.replacePhotoId, file) else drafts.drafts.add(file, key.viewType)
+                            nav.pop()
+                        },
+                        onBack = { nav.pop() },
+                    )
+                }
+                entry<AnalysisKey> {
+                    AnalysisScreen(
+                        onDone = { id -> nav.pop(); nav.push(ResultKey(id)) },
+                        onBack = { nav.pop() },
+                    )
+                }
+                entry<ResultKey> { key ->
+                    ResultScreen(
+                        observationId = key.observationId,
+                        onBack = { nav.pop() },
+                        onCompare = { alt -> nav.push(ComparisonKey(key.observationId, alt)) },
+                        onAddPhoto = { view -> nav.popToRoot(); nav.push(CameraKey(view)) },
+                        onNewObservation = { drafts.drafts.clear(); nav.popToRoot() },
+                    )
+                }
             },
         )
     }
 }
+
+/** Tiny holder so navigation callbacks can reach the draft and photo store without a screen-level ViewModel. */
+@dagger.hilt.android.lifecycle.HiltViewModel
+class NavDraftAccess @javax.inject.Inject constructor(
+    val drafts: de.pilzscout.app.identify.DraftRepository,
+    val photoStore: de.pilzscout.app.identify.PhotoStore,
+) : androidx.lifecycle.ViewModel()
