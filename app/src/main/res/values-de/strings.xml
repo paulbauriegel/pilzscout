@@ -218,4 +218,34 @@
     <string name="ft_label_dna">DNA-sequenzierte Referenz</string>
     <string name="ft_label_expert">Von Fachleuten bestimmt (Atlas der dänischen Pilze)</string>
     <string name="ft_dataset_note">FungiTastic: Picek et al., CVPRW 2025. Daten CC BY 4.0.</string>
+    <string name="action_cancel">Abbrechen</string>
+    <string name="history_search_hint">Nach Art suchen</string>
+    <string name="history_filters">Filter</string>
+    <string name="history_counts">%1$d von %2$d Beobachtungen</string>
+    <string name="history_empty">Noch keine Beobachtungen. Jede abgeschlossene Bestimmung wird hier automatisch gespeichert.</string>
+    <string name="history_no_matches">Keine Beobachtungen passen zum aktuellen Filter.</string>
+    <string name="history_filter_any_date">Beliebiges Datum</string>
+    <string name="history_filter_week">Letzte 7 Tage</string>
+    <string name="history_filter_month">Letzte 30 Tage</string>
+    <string name="history_filter_confident">≥ 60 %% Konfidenz</string>
+    <string name="history_filter_confirmed">Nur bestätigte</string>
+    <string name="history_offline_result">Offline-Ergebnis</string>
+    <string name="history_online_result">Online-Ergebnis</string>
+    <string name="history_confirmed">Von dir bestätigt</string>
+    <string name="history_unconfirmed">Unbestätigt</string>
+    <string name="history_selected">%1$d ausgewählt</string>
+    <string name="history_clear_selection">Auswahl aufheben</string>
+    <string name="history_select_all">Alle auswählen</string>
+    <string name="history_export">Exportieren</string>
+    <string name="history_delete">Löschen</string>
+    <plurals name="history_delete_confirm">
+        <item quantity="one">Diese Beobachtung mit ihren Fotos löschen? Das lässt sich nicht rückgängig machen.</item>
+        <item quantity="other">%d Beobachtungen mit ihren Fotos löschen? Das lässt sich nicht rückgängig machen.</item>
+    </plurals>
+    <string name="history_export_done">Export gespeichert.</string>
+    <string name="history_export_failed">Export fehlgeschlagen:</string>
+    <string name="history_correct">Bestimmung korrigieren</string>
+    <string name="history_correct_title">Bestimmung korrigieren</string>
+    <string name="history_correct_hint">Wähle die Art, die du überprüft hast. Die ursprüngliche Vorhersage bleibt zur Auswertung erhalten.</string>
+    <string name="history_confirm_as_is">Vorhersage als richtig bestätigen</string>
 </resources>

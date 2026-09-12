@@ -228,4 +228,35 @@
     <string name="ft_label_dna">DNA-sequenced ground truth</string>
     <string name="ft_label_expert">Expert-labelled (Atlas of Danish Fungi)</string>
     <string name="ft_dataset_note">FungiTastic: Picek et al., CVPRW 2025. Data CC BY 4.0.</string>
+    <!-- History -->
+    <string name="action_cancel">Cancel</string>
+    <string name="history_search_hint">Search by species</string>
+    <string name="history_filters">Filter</string>
+    <string name="history_counts">%1$d of %2$d observations</string>
+    <string name="history_empty">No observations yet. Every completed identification is saved here automatically.</string>
+    <string name="history_no_matches">No observations match the current filter.</string>
+    <string name="history_filter_any_date">Any date</string>
+    <string name="history_filter_week">Last 7 days</string>
+    <string name="history_filter_month">Last 30 days</string>
+    <string name="history_filter_confident">≥ 60 %% confidence</string>
+    <string name="history_filter_confirmed">Confirmed only</string>
+    <string name="history_offline_result">Offline result</string>
+    <string name="history_online_result">Online result</string>
+    <string name="history_confirmed">Confirmed by you</string>
+    <string name="history_unconfirmed">Unconfirmed</string>
+    <string name="history_selected">%1$d selected</string>
+    <string name="history_clear_selection">Clear selection</string>
+    <string name="history_select_all">Select all</string>
+    <string name="history_export">Export</string>
+    <string name="history_delete">Delete</string>
+    <plurals name="history_delete_confirm">
+        <item quantity="one">Delete this observation and its photos? This cannot be undone.</item>
+        <item quantity="other">Delete %d observations and their photos? This cannot be undone.</item>
+    </plurals>
+    <string name="history_export_done">Export saved.</string>
+    <string name="history_export_failed">Export failed:</string>
+    <string name="history_correct">Correct identification</string>
+    <string name="history_correct_title">Correct the identification</string>
+    <string name="history_correct_hint">Pick the species you have verified. The original prediction stays in the record for evaluation.</string>
+    <string name="history_confirm_as_is">Confirm the prediction as correct</string>
 </resources>

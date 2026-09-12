@@ -102,7 +102,7 @@ fun AppNavDisplay() {
                 entry<FtObservationKey> { key ->
                     FtObservationScreen(observationId = key.observationId, onBack = { nav.pop() }, onOpenSpecies = { id -> nav.push(SpeciesDetailKey(id, BrowseSource.FUNGITASTIC.name)) })
                 }
-                entry<HistoryKey> { HistoryScreen(onOpenSettings = { nav.push(SettingsKey) }) }
+                entry<HistoryKey> { HistoryScreen(onOpenSettings = { nav.push(SettingsKey) }, onOpenObservation = { id -> nav.push(ResultKey(id)) }) }
                 entry<SettingsKey> { SettingsScreen(onBack = { nav.pop() }) }
                 entry<CameraKey> { key ->
                     val captureFile = remember(key) { drafts.photoStore.newCaptureFile() }
