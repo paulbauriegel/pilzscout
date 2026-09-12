@@ -31,9 +31,9 @@ WANTED = {
     "district", "latitude", "longitude", "coorUncert", "elevation", "biogeographicalRegion", "captions", "countryCode",
 }
 CANDIDATES = 40
-OBS_DE, OBS_OTHER = 3, 1
-MAX_PHOTOS_PER_OBS = 2
-MAX_PHOTOS_PER_SPECIES = 6
+OBS_DE, OBS_OTHER = 2, 1
+MAX_PHOTOS_PER_OBS = 1
+MAX_PHOTOS_PER_SPECIES = 2
 THUMB_EDGE, HD_EDGE = 224, 640
 THUMB_QUALITY = 60
 MAX_CAPTION = 600
@@ -213,10 +213,15 @@ def run(cfg: Config, hd: bool = False, masks: str | None = None) -> None:
     if masks:
         photos_df = _apply_masks(cfg, photos_df, Path(masks))
 
+    # Remove thumbnails from earlier runs that are no longer referenced, so the pack only ships what the DB knows.
+    keep = {Path(t).name for t in photos_df["thumb_file"].dropna()}
+    for old in thumb_dir.glob("*.webp"):
+        if old.name not in keep:
+            old.unlink()
     stats_df.to_parquet(cfg.cache_dir / "species_stats.parquet", index=False)
-    obs_df.to_parquet(cfg.cache_dir / "ft_observations.parquet", index=False)
-    photos_df.drop(columns=["split"]).to_parquet(cfg.cache_dir / "ft_photos.parquet", index=False)
-    print(f"wrote {len(obs_df)} observations, {len(photos_df)} photos with thumbnails")
+    # Species-level reference photos only; individual observations and captions are not shipped in the app.
+    photos_df[["filename", "species_id", "has_mask", "thumb_file", "hd_file"]].to_parquet(cfg.cache_dir / "ft_photos.parquet", index=False)
+    print(f"wrote {len(photos_df)} reference photos with thumbnails for {photos_df.species_id.nunique()} species")
 
 
 def _apply_masks(cfg: Config, photos_df: pd.DataFrame, parquet_dir: Path) -> pd.DataFrame:

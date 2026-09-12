@@ -3,12 +3,9 @@ package de.pilzscout.app.ui.browse
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.pilzscout.app.data.species.FtObservationEntity
-import de.pilzscout.app.data.species.FtPhotoEntity
 import de.pilzscout.app.data.species.GroupCount
 import de.pilzscout.app.data.species.SpeciesRepository
 import de.pilzscout.app.data.species.SpeciesSummary
-import de.pilzscout.app.pack.PackFiles
 import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
@@ -17,11 +14,10 @@ import kotlinx.coroutines.flow.combine
 import kotlinx.coroutines.flow.debounce
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
-import java.io.File
 import javax.inject.Inject
 
 enum class BrowseSource { FUNGITASTIC, WIKIPEDIA }
-enum class BrowseTab { SPECIES, GROUPS, OBSERVATIONS }
+enum class BrowseTab { SPECIES, GROUPS }
 
 data class GroupsState(
     val families: List<GroupCount> = emptyList(),
@@ -30,8 +26,6 @@ data class GroupsState(
     val selectedGenus: String? = null,
     val species: List<SpeciesSummary> = emptyList(),
 )
-
-data class ObservationRow(val observation: FtObservationEntity, val lead: FtPhotoEntity?, val thumb: File?, val speciesName: String)
 
 data class BrowseUiState(
     val dbAvailable: Boolean = false,
@@ -47,10 +41,11 @@ data class BrowseUiState(
 @HiltViewModel
 class BrowseViewModel @Inject constructor(
     private val species: SpeciesRepository,
-    private val packFiles: PackFiles,
 ) : ViewModel() {
 
     private val query = MutableStateFlow("")
+    /** Undebounced text for the search field; the debounced [query] drives the actual search. */
+    val queryText: StateFlow<String> = query
     private val source = MutableStateFlow(BrowseSource.FUNGITASTIC)
     private val tab = MutableStateFlow(BrowseTab.SPECIES)
 
@@ -67,18 +62,11 @@ class BrowseViewModel @Inject constructor(
     private val _groups = MutableStateFlow(GroupsState())
     val groups: StateFlow<GroupsState> = _groups
 
-    private val _observations = MutableStateFlow<List<ObservationRow>>(emptyList())
-    val observations: StateFlow<List<ObservationRow>> = _observations
-
     fun setQuery(q: String) { query.value = q }
     fun setSource(s: BrowseSource) { source.value = s }
     fun setTab(t: BrowseTab) {
         tab.value = t
-        when (t) {
-            BrowseTab.GROUPS -> if (_groups.value.families.isEmpty()) loadFamilies()
-            BrowseTab.OBSERVATIONS -> if (_observations.value.isEmpty()) loadObservations()
-            else -> Unit
-        }
+        if (t == BrowseTab.GROUPS && _groups.value.families.isEmpty()) loadFamilies()
     }
 
     private fun loadFamilies() = viewModelScope.launch {
@@ -96,13 +84,4 @@ class BrowseViewModel @Inject constructor(
         _groups.value = _groups.value.copy(selectedGenus = genus, species = if (genus == null) emptyList() else species.byGenus(genus))
     }
 
-    fun loadObservations(offset: Int = 0) = viewModelScope.launch {
-        val obs = species.ftRecent(limit = 60, offset = offset)
-        val names = species.byIds(obs.map { it.speciesId }.distinct())
-        val rows = obs.map { o ->
-            val lead = species.ftPhotos(o.observationId).firstOrNull()
-            ObservationRow(o, lead, packFiles.existing(lead?.thumbFile), names[o.speciesId]?.binomial ?: o.speciesId)
-        }
-        _observations.value = if (offset == 0) rows else _observations.value + rows
-    }
 }

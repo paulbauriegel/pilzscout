@@ -106,21 +106,18 @@ interface WikiDao {
 
 @Dao
 interface FungiTasticDao {
-    @Query("SELECT * FROM fungitastic_observation WHERE species_id = :speciesId ORDER BY dna_sequenced DESC, event_date DESC")
-    suspend fun observationsForSpecies(speciesId: String): List<FtObservationEntity>
-
-    @Query("SELECT * FROM fungitastic_observation WHERE observation_id = :id")
-    suspend fun observation(id: Long): FtObservationEntity?
-
-    @Query("SELECT * FROM fungitastic_photo WHERE observation_id = :observationId ORDER BY filename")
-    suspend fun photosForObservation(observationId: Long): List<FtPhotoEntity>
-
-    @Query("SELECT * FROM fungitastic_photo WHERE species_id = :speciesId ORDER BY observation_id, filename LIMIT :limit")
+    @Query("SELECT * FROM fungitastic_photo WHERE species_id = :speciesId ORDER BY filename LIMIT :limit")
     suspend fun photosForSpecies(speciesId: String, limit: Int): List<FtPhotoEntity>
 
-    @Query("SELECT * FROM fungitastic_photo WHERE species_id = :speciesId ORDER BY observation_id, filename LIMIT 1")
+    @Query("SELECT * FROM fungitastic_photo WHERE species_id = :speciesId ORDER BY filename LIMIT 1")
     suspend fun leadPhoto(speciesId: String): FtPhotoEntity?
+}
 
-    @Query("SELECT * FROM fungitastic_observation ORDER BY event_date DESC LIMIT :limit OFFSET :offset")
-    suspend fun recentObservations(limit: Int, offset: Int): List<FtObservationEntity>
+@Dao
+interface PlaceDao {
+    @Query("SELECT * FROM place WHERE lat BETWEEN :latMin AND :latMax AND lon BETWEEN :lonMin AND :lonMax")
+    suspend fun inBox(latMin: Double, latMax: Double, lonMin: Double, lonMax: Double): List<PlaceEntity>
+
+    @Query("SELECT COUNT(*) FROM place")
+    suspend fun count(): Int
 }

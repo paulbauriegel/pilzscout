@@ -303,4 +303,7 @@
     <string name="history_yesterday">Gestern</string>
     <string name="settings_dynamic_color">Systemfarben verwenden</string>
     <string name="settings_dynamic_color_summary">Android-Farbschema statt der Waldpalette</string>
+    <string name="species_ft_photos">FungiTastic-Referenzfotos</string>
+    <string name="species_ft_photos_note">Fotos aus FungiTastic-Beobachtungen, CC BY 4.0.</string>
+    <string name="location_near">bei %1$s (ca.)</string>
 </resources>

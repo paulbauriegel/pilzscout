@@ -52,10 +52,10 @@ def build(cfg: Config, out: Path) -> Path:
     wiki = _optional_parquet(cfg.cache_dir / "wiki_articles.parquet")
     common = _optional_json(cfg.cache_dir / "common_names.json")  # species_id -> {"de": ..., "en": ...}
     stats = _optional_parquet(cfg.cache_dir / "species_stats.parquet")
-    observations = _optional_parquet(cfg.cache_dir / "ft_observations.parquet")
     photos = _optional_parquet(cfg.cache_dir / "ft_photos.parquet")
     traits = _optional_parquet(cfg.cache_dir / "traits.parquet")
     edibility = _optional_parquet(cfg.cache_dir / "edibility.parquet")
+    places = _optional_parquet(cfg.cache_dir / "places.parquet")
     edibility_by_id = edibility.set_index("species_id").to_dict("index") if edibility is not None else {}
 
     if gbif is None:
@@ -130,22 +130,15 @@ def build(cfg: Config, out: Path) -> Path:
                     for r in wiki.itertuples(index=False)
                 ],
             )
-        if observations is not None:
-            conn.executemany(
-                """INSERT INTO fungitastic_observation (observation_id, species_id, event_date, month, region, district, habitat,
-                   substrate, meta_substrate, lat, lon, coord_uncert, split, dna_sequenced, biogeo_region, elevation)
-                   VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
-                [tuple(None if v != v else v for v in r) for r in observations[[
-                    "observation_id", "species_id", "event_date", "month", "region", "district", "habitat", "substrate",
-                    "meta_substrate", "lat", "lon", "coord_uncert", "split", "dna_sequenced", "biogeo_region", "elevation",
-                ]].itertuples(index=False, name=None)],
-            )
         if photos is not None:
             conn.executemany(
-                "INSERT INTO fungitastic_photo (filename, observation_id, species_id, caption, has_mask, thumb_file, hd_file) VALUES (?,?,?,?,?,?,?)",
-                [tuple(None if v != v else v for v in r) for r in photos[[
-                    "filename", "observation_id", "species_id", "caption", "has_mask", "thumb_file", "hd_file",
-                ]].itertuples(index=False, name=None)],
+                "INSERT INTO fungitastic_photo (filename, species_id, has_mask, thumb_file, hd_file) VALUES (?,?,?,?,?)",
+                [tuple(None if v != v else v for v in r) for r in photos[["filename", "species_id", "has_mask", "thumb_file", "hd_file"]].itertuples(index=False, name=None)],
+            )
+        if places is not None:
+            conn.executemany(
+                "INSERT INTO place (id, name, admin1, lat, lon, population, kind) VALUES (?,?,?,?,?,?,?)",
+                [(int(r.id), r.name, r.admin1, float(r.lat), float(r.lon), int(r.population), r.kind) for r in places.itertuples(index=False)],
             )
         conn.commit()
         conn.execute("VACUUM")

@@ -20,6 +20,7 @@ class IdentifyViewModel @Inject constructor(
     private val drafts: DraftRepository,
     private val photoStore: PhotoStore,
     private val location: CoarseLocationProvider,
+    private val places: de.pilzscout.app.location.PlaceResolver,
     classifierProvider: ClassifierProvider,
 ) : ViewModel() {
 
@@ -29,7 +30,11 @@ class IdentifyViewModel @Inject constructor(
     fun hasLocationPermission() = location.hasPermission()
 
     fun fetchLocation() {
-        viewModelScope.launch { drafts.setLocation(location.current()) }
+        viewModelScope.launch {
+            val loc = location.current()
+            val place = loc?.let { places.nearest(it.lat, it.lon) }
+            drafts.setLocation(loc, place?.name)
+        }
     }
 
     fun removeLocation() = drafts.setIncludeLocation(false)

@@ -16,6 +16,7 @@ data class Draft(
     val photos: List<DraftPhoto> = emptyList(),
     val capturedAt: Long = System.currentTimeMillis(),
     val location: ApproxLocation? = null,
+    val placeName: String? = null,
     val includeLocation: Boolean = true,
     val locationRequested: Boolean = false,
     /** Content language ("de" or "en") at the time of identification; used for the stored comparison texts. */
@@ -61,7 +62,7 @@ class DraftRepository @Inject constructor() {
 
     fun setLanguage(language: String) = _draft.update { it.copy(language = language) }
 
-    fun setLocation(location: ApproxLocation?) = _draft.update { it.copy(location = location, locationRequested = true) }
+    fun setLocation(location: ApproxLocation?, placeName: String? = null) = _draft.update { it.copy(location = location, placeName = placeName, locationRequested = true) }
     fun setIncludeLocation(include: Boolean) = _draft.update { it.copy(includeLocation = include) }
 
     fun clear() {

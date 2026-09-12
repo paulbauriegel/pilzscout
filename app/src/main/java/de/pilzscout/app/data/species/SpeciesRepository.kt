@@ -46,12 +46,8 @@ class SpeciesRepository @Inject constructor(
     suspend fun statsFor(ids: List<String>) = if (ids.isEmpty()) emptyList() else db().traitDao().statsFor(ids)
     suspend fun wikiArticle(speciesId: String, lang: String) = db().wikiDao().article(speciesId, lang)
     suspend fun wikiLanguages(speciesId: String) = db().wikiDao().availableLanguages(speciesId)
-    suspend fun ftObservations(speciesId: String) = db().fungiTasticDao().observationsForSpecies(speciesId)
-    suspend fun ftObservation(id: Long) = db().fungiTasticDao().observation(id)
-    suspend fun ftPhotos(observationId: Long) = db().fungiTasticDao().photosForObservation(observationId)
-    suspend fun ftPhotosForSpecies(speciesId: String, limit: Int = 8) = db().fungiTasticDao().photosForSpecies(speciesId, limit)
+    suspend fun ftPhotosForSpecies(speciesId: String, limit: Int = 4) = db().fungiTasticDao().photosForSpecies(speciesId, limit)
     suspend fun ftLeadPhoto(speciesId: String) = db().fungiTasticDao().leadPhoto(speciesId)
-    suspend fun ftRecent(limit: Int, offset: Int) = db().fungiTasticDao().recentObservations(limit, offset)
 
     /** mask[classIndex] == true when the species is recorded in Germany. Cached per opened database. */
     suspend fun germanyMask(numClasses: Int): BooleanArray = maskMutex.withLock {

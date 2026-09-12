@@ -28,7 +28,6 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import de.pilzscout.app.ui.analysis.AnalysisScreen
 import de.pilzscout.app.ui.browse.BrowseScreen
 import de.pilzscout.app.ui.browse.BrowseSource
-import de.pilzscout.app.ui.species.FtObservationScreen
 import de.pilzscout.app.ui.species.SpeciesDetailScreen
 import de.pilzscout.app.ui.camera.CameraScreen
 import de.pilzscout.app.ui.comparison.ComparisonScreen
@@ -73,7 +72,6 @@ fun AppNavDisplay() {
                     BrowseScreen(
                         onOpenSettings = { nav.push(SettingsKey) },
                         onOpenSpecies = { id, source -> nav.push(SpeciesDetailKey(id, source.name)) },
-                        onOpenObservation = { id -> nav.push(FtObservationKey(id)) },
                     )
                 }
                 entry<SpeciesDetailKey> { key ->
@@ -81,11 +79,7 @@ fun AppNavDisplay() {
                         speciesId = key.speciesId,
                         initialSource = runCatching { BrowseSource.valueOf(key.source) }.getOrDefault(BrowseSource.FUNGITASTIC),
                         onBack = { nav.pop() },
-                        onOpenObservation = { id -> nav.push(FtObservationKey(id)) },
                     )
-                }
-                entry<FtObservationKey> { key ->
-                    FtObservationScreen(observationId = key.observationId, onBack = { nav.pop() }, onOpenSpecies = { id -> nav.push(SpeciesDetailKey(id, BrowseSource.FUNGITASTIC.name)) })
                 }
                 entry<HistoryKey> { HistoryScreen(onOpenSettings = { nav.push(SettingsKey) }, onOpenObservation = { id -> nav.push(ResultKey(id)) }) }
                 entry<SettingsKey> { SettingsScreen(onBack = { nav.pop() }) }

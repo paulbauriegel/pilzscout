@@ -59,6 +59,14 @@ def traits() -> None:
 
 
 @app.command()
+def places(country: str = typer.Option("DE")) -> None:
+    """Offline gazetteer of populated places from GeoNames (needs cache/geonames/<CC>.txt)."""
+    from .places import run
+
+    run(CFG, country=country)
+
+
+@app.command()
 def sqlite() -> None:
     """Build core/species.db from the Room schema JSON and the cached step outputs."""
     from .sqlite import run

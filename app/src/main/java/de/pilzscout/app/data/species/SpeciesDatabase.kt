@@ -10,8 +10,8 @@ import androidx.room.RoomDatabase
         TraitEntity::class,
         SpeciesStatsEntity::class,
         WikiArticleEntity::class,
-        FtObservationEntity::class,
         FtPhotoEntity::class,
+        PlaceEntity::class,
     ],
     version = SpeciesDatabase.VERSION,
     exportSchema = true,
@@ -21,9 +21,10 @@ abstract class SpeciesDatabase : RoomDatabase() {
     abstract fun traitDao(): TraitDao
     abstract fun wikiDao(): WikiDao
     abstract fun fungiTasticDao(): FungiTasticDao
+    abstract fun placeDao(): PlaceDao
 
     companion object {
         /** Bump together with the pack schemaVersion whenever entities change. */
-        const val VERSION = 2
+        const val VERSION = 4
     }
 }

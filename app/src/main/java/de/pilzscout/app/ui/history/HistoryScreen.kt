@@ -264,8 +264,11 @@ private fun HistoryCard(item: HistoryItem, selecting: Boolean, selected: Boolean
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
                 Icon(Icons.Outlined.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
                 Text(
-                    if (o.locationIncluded && o.lat != null && o.lon != null) "%.2f, %.2f".format(o.lat, o.lon) + " · " + stringResource(R.string.history_offline_result)
-                    else stringResource(R.string.history_offline_result),
+                    when {
+                        o.locationIncluded && o.placeName != null -> stringResource(R.string.location_near, o.placeName) + " · " + stringResource(R.string.history_offline_result)
+                        o.locationIncluded && o.lat != null && o.lon != null -> "%.2f, %.2f".format(o.lat, o.lon) + " · " + stringResource(R.string.history_offline_result)
+                        else -> stringResource(R.string.history_offline_result)
+                    },
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )

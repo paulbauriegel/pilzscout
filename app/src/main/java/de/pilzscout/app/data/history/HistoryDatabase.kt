@@ -23,6 +23,7 @@ data class ObservationEntity(
     val lat: Double?,
     val lon: Double?,
     @ColumnInfo(name = "location_included") val locationIncluded: Boolean,
+    @ColumnInfo(name = "place_name", defaultValue = "NULL") val placeName: String? = null,
     @ColumnInfo(name = "primary_species_id") val primarySpeciesId: String,
     @ColumnInfo(name = "primary_prob") val primaryProb: Float,
     val descriptor: String,
@@ -124,7 +125,12 @@ interface HistoryDao {
     fun observeCount(): Flow<Int>
 }
 
-@Database(entities = [ObservationEntity::class, PhotoEntity::class, CandidateEntity::class], version = 1, exportSchema = true)
+@Database(
+    entities = [ObservationEntity::class, PhotoEntity::class, CandidateEntity::class],
+    version = 2,
+    exportSchema = true,
+    autoMigrations = [androidx.room.AutoMigration(from = 1, to = 2)],
+)
 abstract class HistoryDatabase : RoomDatabase() {
     abstract fun historyDao(): HistoryDao
 }

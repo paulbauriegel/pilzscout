@@ -69,7 +69,6 @@ fun SpeciesDetailScreen(
     speciesId: String,
     initialSource: BrowseSource,
     onBack: () -> Unit,
-    onOpenObservation: (Long) -> Unit,
     viewModel: SpeciesDetailViewModel = hiltViewModel<SpeciesDetailViewModel, SpeciesDetailViewModel.Factory> { it.create(speciesId) },
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
@@ -108,7 +107,7 @@ fun SpeciesDetailScreen(
                 }
             }
             when (source) {
-                BrowseSource.FUNGITASTIC -> state.fungiTastic?.let { FungiTasticSection(it, onOpenObservation) }
+                BrowseSource.FUNGITASTIC -> state.fungiTastic?.let { FungiTasticSection(it) }
                 BrowseSource.WIKIPEDIA -> WikipediaSection(state)
             }
             Spacer(Modifier.height(24.dp))
@@ -117,7 +116,7 @@ fun SpeciesDetailScreen(
 }
 
 @Composable
-private fun FungiTasticSection(ft: FtSection, onOpenObservation: (Long) -> Unit) {
+private fun FungiTasticSection(ft: FtSection) {
     val stats = ft.stats
     if (stats == null) {
         Text(stringResource(R.string.species_ft_missing), style = MaterialTheme.typography.bodyMedium)
@@ -140,23 +139,15 @@ private fun FungiTasticSection(ft: FtSection, onOpenObservation: (Long) -> Unit)
     CountList(stringResource(R.string.species_ft_substrates), ft.substrates, stats.nObs)
     CountList(stringResource(R.string.species_ft_regions), ft.regions, stats.nObs)
     Text(stringResource(R.string.species_ft_source_note), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-    HorizontalDivider()
-    Text(stringResource(R.string.species_ft_observations), style = MaterialTheme.typography.titleSmall)
-    if (ft.observations.isEmpty()) Text(stringResource(R.string.species_ft_no_photos), style = MaterialTheme.typography.bodySmall)
-    LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
-        items(ft.observations, key = { it.observationId }) { o ->
-            val lead = ft.leadPhotos[o.observationId]
-            Column(Modifier.width(140.dp).clickable { onOpenObservation(o.observationId) }, verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Box(Modifier.size(140.dp).clip(MaterialTheme.shapes.large).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
-                    lead?.second?.let { AsyncImage(model = it, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize()) }
-                }
-                Text(listOfNotNull(o.eventDate, o.region).joinToString(" · "), style = MaterialTheme.typography.labelSmall, maxLines = 2)
-                Row(horizontalArrangement = Arrangement.spacedBy(4.dp)) {
-                    Text(o.split, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    if (o.dnaSequenced == 1) Text("DNA", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                }
+    if (ft.photos.isNotEmpty()) {
+        HorizontalDivider()
+        Text(stringResource(R.string.species_ft_photos), style = MaterialTheme.typography.titleSmall)
+        LazyRow(horizontalArrangement = Arrangement.spacedBy(10.dp)) {
+            items(ft.photos, key = { it.first.filename }) { (_, file) ->
+                AsyncImage(model = file, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.size(150.dp).clip(MaterialTheme.shapes.large))
             }
         }
+        Text(stringResource(R.string.species_ft_photos_note), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
     }
 }
 

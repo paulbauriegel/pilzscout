@@ -139,7 +139,7 @@ fun IdentifyScreen(
             }
             ContextCard(
                 date = DateFormat.getMediumDateFormat(context).format(Date(draft.capturedAt)),
-                location = draft.location?.let { "%.2f, %.2f".format(it.lat, it.lon) },
+                location = draft.placeName?.let { stringResource(R.string.location_near, it) } ?: draft.location?.let { "%.2f, %.2f".format(it.lat, it.lon) },
                 locationIncluded = draft.includeLocation,
                 onToggleLocation = {
                     if (draft.includeLocation) viewModel.removeLocation()

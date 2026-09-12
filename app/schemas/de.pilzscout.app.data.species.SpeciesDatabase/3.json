@@ -1,0 +1,474 @@
+{
+  "formatVersion": 1,
+  "database": {
+    "version": 3,
+    "identityHash": "c242eaa0c5da8be39c27773344c0742f",
+    "entities": [
+      {
+        "tableName": "species",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` TEXT NOT NULL, `scientific_name` TEXT NOT NULL, `binomial` TEXT NOT NULL, `genus` TEXT NOT NULL, `specific_epithet` TEXT NOT NULL, `family` TEXT, `order_name` TEXT, `class_name` TEXT, `common_de` TEXT, `common_en` TEXT, `poisonous` INTEGER NOT NULL, `gbif_key` INTEGER, `de_occurrences` INTEGER NOT NULL, `in_germany` INTEGER NOT NULL, `model_class_index` INTEGER NOT NULL, `has_wiki_de` INTEGER NOT NULL, `has_wiki_en` INTEGER NOT NULL, `n_observations` INTEGER NOT NULL, `edibility` TEXT, `edibility_source` TEXT, PRIMARY KEY(`id`))",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "scientificName",
+            "columnName": "scientific_name",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "binomial",
+            "columnName": "binomial",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "genus",
+            "columnName": "genus",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "specificEpithet",
+            "columnName": "specific_epithet",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "family",
+            "columnName": "family",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "orderName",
+            "columnName": "order_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "className",
+            "columnName": "class_name",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "commonDe",
+            "columnName": "common_de",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "commonEn",
+            "columnName": "common_en",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "poisonous",
+            "columnName": "poisonous",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "gbifKey",
+            "columnName": "gbif_key",
+            "affinity": "INTEGER"
+          },
+          {
+            "fieldPath": "deOccurrences",
+            "columnName": "de_occurrences",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "inGermany",
+            "columnName": "in_germany",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "modelClassIndex",
+            "columnName": "model_class_index",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasWikiDe",
+            "columnName": "has_wiki_de",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasWikiEn",
+            "columnName": "has_wiki_en",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nObservations",
+            "columnName": "n_observations",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "edibility",
+            "columnName": "edibility",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "edibilitySource",
+            "columnName": "edibility_source",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_species_model_class_index",
+            "unique": true,
+            "columnNames": [
+              "model_class_index"
+            ],
+            "orders": [],
+            "createSql": "CREATE UNIQUE INDEX IF NOT EXISTS `index_species_model_class_index` ON `${TABLE_NAME}` (`model_class_index`)"
+          },
+          {
+            "name": "index_species_genus",
+            "unique": false,
+            "columnNames": [
+              "genus"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_species_genus` ON `${TABLE_NAME}` (`genus`)"
+          },
+          {
+            "name": "index_species_family",
+            "unique": false,
+            "columnNames": [
+              "family"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_species_family` ON `${TABLE_NAME}` (`family`)"
+          }
+        ]
+      },
+      {
+        "tableName": "species_search",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `species_id` TEXT NOT NULL, `text_norm` TEXT NOT NULL, `kind` TEXT NOT NULL)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "speciesId",
+            "columnName": "species_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "textNorm",
+            "columnName": "text_norm",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "kind",
+            "columnName": "kind",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_species_search_species_id",
+            "unique": false,
+            "columnNames": [
+              "species_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_species_search_species_id` ON `${TABLE_NAME}` (`species_id`)"
+          },
+          {
+            "name": "index_species_search_text_norm",
+            "unique": false,
+            "columnNames": [
+              "text_norm"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_species_search_text_norm` ON `${TABLE_NAME}` (`text_norm`)"
+          }
+        ]
+      },
+      {
+        "tableName": "trait",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`id` INTEGER PRIMARY KEY AUTOINCREMENT NOT NULL, `species_id` TEXT NOT NULL, `feature` TEXT NOT NULL, `lang` TEXT NOT NULL, `text` TEXT NOT NULL, `value_key` TEXT, `basis` TEXT NOT NULL, `source` TEXT)",
+        "fields": [
+          {
+            "fieldPath": "id",
+            "columnName": "id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "speciesId",
+            "columnName": "species_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "feature",
+            "columnName": "feature",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lang",
+            "columnName": "lang",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "text",
+            "columnName": "text",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "valueKey",
+            "columnName": "value_key",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "basis",
+            "columnName": "basis",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "source",
+            "columnName": "source",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": true,
+          "columnNames": [
+            "id"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_trait_species_id_feature",
+            "unique": false,
+            "columnNames": [
+              "species_id",
+              "feature"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_trait_species_id_feature` ON `${TABLE_NAME}` (`species_id`, `feature`)"
+          }
+        ]
+      },
+      {
+        "tableName": "species_stats",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`species_id` TEXT NOT NULL, `habitats_json` TEXT NOT NULL, `substrates_json` TEXT NOT NULL, `month_hist_json` TEXT NOT NULL, `regions_json` TEXT NOT NULL, `n_obs` INTEGER NOT NULL, `n_dna` INTEGER NOT NULL, PRIMARY KEY(`species_id`))",
+        "fields": [
+          {
+            "fieldPath": "speciesId",
+            "columnName": "species_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "habitatsJson",
+            "columnName": "habitats_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "substratesJson",
+            "columnName": "substrates_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "monthHistJson",
+            "columnName": "month_hist_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "regionsJson",
+            "columnName": "regions_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nObs",
+            "columnName": "n_obs",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "nDna",
+            "columnName": "n_dna",
+            "affinity": "INTEGER",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "species_id"
+          ]
+        }
+      },
+      {
+        "tableName": "wiki_article",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`species_id` TEXT NOT NULL, `lang` TEXT NOT NULL, `title` TEXT NOT NULL, `url` TEXT NOT NULL, `revision_id` INTEGER NOT NULL, `summary` TEXT NOT NULL, `description` TEXT, `thumb_file` TEXT, `sections_json` TEXT NOT NULL, `license` TEXT NOT NULL, `retrieved_at` TEXT NOT NULL, PRIMARY KEY(`species_id`, `lang`))",
+        "fields": [
+          {
+            "fieldPath": "speciesId",
+            "columnName": "species_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "lang",
+            "columnName": "lang",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "title",
+            "columnName": "title",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "url",
+            "columnName": "url",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "revisionId",
+            "columnName": "revision_id",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "summary",
+            "columnName": "summary",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "description",
+            "columnName": "description",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "thumbFile",
+            "columnName": "thumb_file",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "sectionsJson",
+            "columnName": "sections_json",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "license",
+            "columnName": "license",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "retrievedAt",
+            "columnName": "retrieved_at",
+            "affinity": "TEXT",
+            "notNull": true
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "species_id",
+            "lang"
+          ]
+        }
+      },
+      {
+        "tableName": "fungitastic_photo",
+        "createSql": "CREATE TABLE IF NOT EXISTS `${TABLE_NAME}` (`filename` TEXT NOT NULL, `species_id` TEXT NOT NULL, `has_mask` INTEGER NOT NULL, `thumb_file` TEXT, `hd_file` TEXT, PRIMARY KEY(`filename`))",
+        "fields": [
+          {
+            "fieldPath": "filename",
+            "columnName": "filename",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "speciesId",
+            "columnName": "species_id",
+            "affinity": "TEXT",
+            "notNull": true
+          },
+          {
+            "fieldPath": "hasMask",
+            "columnName": "has_mask",
+            "affinity": "INTEGER",
+            "notNull": true
+          },
+          {
+            "fieldPath": "thumbFile",
+            "columnName": "thumb_file",
+            "affinity": "TEXT"
+          },
+          {
+            "fieldPath": "hdFile",
+            "columnName": "hd_file",
+            "affinity": "TEXT"
+          }
+        ],
+        "primaryKey": {
+          "autoGenerate": false,
+          "columnNames": [
+            "filename"
+          ]
+        },
+        "indices": [
+          {
+            "name": "index_fungitastic_photo_species_id",
+            "unique": false,
+            "columnNames": [
+              "species_id"
+            ],
+            "orders": [],
+            "createSql": "CREATE INDEX IF NOT EXISTS `index_fungitastic_photo_species_id` ON `${TABLE_NAME}` (`species_id`)"
+          }
+        ]
+      }
+    ],
+    "setupQueries": [
+      "CREATE TABLE IF NOT EXISTS room_master_table (id INTEGER PRIMARY KEY,identity_hash TEXT)",
+      "INSERT OR REPLACE INTO room_master_table (id,identity_hash) VALUES(42, 'c242eaa0c5da8be39c27773344c0742f')"
+    ]
+  }
+}

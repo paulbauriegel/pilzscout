@@ -18,6 +18,8 @@ android {
         versionCode = 1
         versionName = "0.1.0"
         testInstrumentationRunner = "de.pilzscout.app.HiltTestRunner"
+        // Only 64-bit ARM devices are targeted for now; drops ~50 MB of LiteRT libraries for other ABIs.
+        ndk { abiFilters += listOf("arm64-v8a") }
     }
 
     buildTypes {

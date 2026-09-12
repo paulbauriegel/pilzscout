@@ -19,4 +19,3 @@ sealed interface TopLevelKey : AppKey
 @Serializable data class ResultKey(val observationId: String) : AppKey
 @Serializable data class ComparisonKey(val observationId: String, val alternativeSpeciesId: String) : AppKey
 @Serializable data class SpeciesDetailKey(val speciesId: String, val source: String) : AppKey
-@Serializable data class FtObservationKey(val observationId: Long) : AppKey

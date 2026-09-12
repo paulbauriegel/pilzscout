@@ -85,33 +85,23 @@ data class WikiArticleEntity(
     @ColumnInfo(name = "retrieved_at") val retrievedAt: String,
 )
 
-@Entity(tableName = "fungitastic_observation", indices = [Index("species_id")])
-data class FtObservationEntity(
-    @PrimaryKey @ColumnInfo(name = "observation_id") val observationId: Long,
-    @ColumnInfo(name = "species_id") val speciesId: String,
-    @ColumnInfo(name = "event_date") val eventDate: String?,
-    val month: Int?,
-    val region: String?,
-    val district: String?,
-    val habitat: String?,
-    val substrate: String?,
-    @ColumnInfo(name = "meta_substrate") val metaSubstrate: String?,
-    val lat: Double?,
-    val lon: Double?,
-    @ColumnInfo(name = "coord_uncert") val coordUncert: Double?,
-    val split: String,
-    @ColumnInfo(name = "dna_sequenced") val dnaSequenced: Int,
-    @ColumnInfo(name = "biogeo_region") val biogeoRegion: String?,
-    val elevation: Double?,
-)
-
-@Entity(tableName = "fungitastic_photo", indices = [Index("observation_id"), Index("species_id")])
+@Entity(tableName = "fungitastic_photo", indices = [Index("species_id")])
 data class FtPhotoEntity(
     @PrimaryKey val filename: String,
-    @ColumnInfo(name = "observation_id") val observationId: Long,
     @ColumnInfo(name = "species_id") val speciesId: String,
-    val caption: String?,
     @ColumnInfo(name = "has_mask") val hasMask: Int,
     @ColumnInfo(name = "thumb_file") val thumbFile: String?,
     @ColumnInfo(name = "hd_file") val hdFile: String?,
+)
+
+/** Offline gazetteer (GeoNames, CC BY 4.0): populated places used to name an approximate location. */
+@Entity(tableName = "place", indices = [Index("lat"), Index("lon")])
+data class PlaceEntity(
+    @PrimaryKey val id: Long,
+    val name: String,
+    val admin1: String?,
+    val lat: Double,
+    val lon: Double,
+    val population: Int,
+    val kind: String,
 )

@@ -124,7 +124,7 @@ class ObservationExporter @Inject constructor(
             observationId = o.id,
             capturedAt = iso(o.capturedAt),
             exportedAt = exportedAt,
-            approxLocation = if (o.locationIncluded && o.lat != null && o.lon != null) ExportLocation(o.lat, o.lon) else null,
+            approxLocation = if (o.locationIncluded && o.lat != null && o.lon != null) ExportLocation(o.lat, o.lon, placeName = o.placeName) else null,
             photos = photos,
             combined = fusion?.combined?.mapIndexed { i, c -> cand(i, c) } ?: obs.candidates.sortedBy { it.rank }.map { ExportCandidate(it.rank, ref(it.speciesId), it.prob) },
             descriptor = runCatching { ConfidenceDescriptor.valueOf(o.descriptor) }.getOrDefault(ConfidenceDescriptor.UNCERTAIN),

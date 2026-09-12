@@ -111,6 +111,7 @@ class IdentifyUseCase @Inject constructor(
             lat = location?.lat,
             lon = location?.lon,
             locationIncluded = location != null,
+            placeName = if (location != null) draft.placeName else null,
             primarySpeciesId = primary.speciesId ?: "class-${primary.classIndex}",
             primaryProb = primary.prob,
             descriptor = descriptor.name,

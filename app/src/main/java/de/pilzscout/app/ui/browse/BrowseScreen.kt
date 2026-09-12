@@ -54,12 +54,11 @@ import de.pilzscout.core.model.Edibility
 fun BrowseScreen(
     onOpenSettings: () -> Unit,
     onOpenSpecies: (String, BrowseSource) -> Unit = { _, _ -> },
-    onOpenObservation: (Long) -> Unit = {},
     viewModel: BrowseViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val groups by viewModel.groups.collectAsStateWithLifecycle()
-    val observations by viewModel.observations.collectAsStateWithLifecycle()
+    val queryText by viewModel.queryText.collectAsStateWithLifecycle()
 
     TabScaffold(
         title = stringResource(R.string.browse_title),
@@ -69,7 +68,7 @@ fun BrowseScreen(
     ) { padding ->
         Column(Modifier.fillMaxSize()) {
             OutlinedTextField(
-                value = state.query,
+                value = queryText,
                 onValueChange = viewModel::setQuery,
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                 placeholder = { Text(stringResource(R.string.browse_search_hint)) },
@@ -99,7 +98,7 @@ fun BrowseScreen(
                         Tab(
                             selected = state.tab == t,
                             onClick = { viewModel.setTab(t) },
-                            text = { Text(stringResource(when (t) { BrowseTab.SPECIES -> R.string.browse_tab_species; BrowseTab.GROUPS -> R.string.browse_tab_groups; BrowseTab.OBSERVATIONS -> R.string.browse_tab_observations })) },
+                            text = { Text(stringResource(when (t) { BrowseTab.SPECIES -> R.string.browse_tab_species; BrowseTab.GROUPS -> R.string.browse_tab_groups })) },
                         )
                     }
                 }
@@ -109,7 +108,6 @@ fun BrowseScreen(
             when (tab) {
                 BrowseTab.SPECIES -> SpeciesList(state, bottom, onOpenSpecies)
                 BrowseTab.GROUPS -> GroupsList(groups, bottom, viewModel::selectFamily, viewModel::selectGenus) { onOpenSpecies(it, state.source) }
-                BrowseTab.OBSERVATIONS -> ObservationsList(observations, bottom, onOpenObservation, onLoadMore = { viewModel.loadObservations(observations.size) })
             }
         }
     }
@@ -158,32 +156,6 @@ private fun GroupRow(name: String, count: Int, italic: Boolean, onClick: () -> U
         Text(name, style = MaterialTheme.typography.bodyLarge, fontStyle = if (italic) FontStyle.Italic else FontStyle.Normal, modifier = Modifier.weight(1f))
         Text("$count", style = MaterialTheme.typography.labelLarge, color = MaterialTheme.colorScheme.onSurfaceVariant)
         Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-    }
-}
-
-@Composable
-private fun ObservationsList(rows: List<ObservationRow>, bottom: androidx.compose.ui.unit.Dp, onOpen: (Long) -> Unit, onLoadMore: () -> Unit) {
-    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = bottom), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        items(rows, key = { it.observation.observationId }) { row ->
-            Row(
-                Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.surfaceContainerLow).clickable { onOpen(row.observation.observationId) }.padding(10.dp),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(12.dp),
-            ) {
-                Box(Modifier.size(64.dp).clip(RoundedCornerShape(12.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
-                    if (row.thumb != null) AsyncImage(model = row.thumb, contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                }
-                Column(Modifier.weight(1f)) {
-                    Text(row.speciesName, fontStyle = FontStyle.Italic, style = MaterialTheme.typography.titleSmall)
-                    Text(listOfNotNull(row.observation.eventDate, row.observation.region, row.observation.habitat).joinToString(" · "), maxLines = 2, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                }
-                if (row.observation.dnaSequenced == 1) Text("DNA", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.primary)
-                Icon(Icons.AutoMirrored.Filled.KeyboardArrowRight, contentDescription = null, tint = MaterialTheme.colorScheme.onSurfaceVariant)
-            }
-        }
-        if (rows.isNotEmpty()) {
-            item { Text(stringResource(R.string.browse_load_more), color = MaterialTheme.colorScheme.primary, modifier = Modifier.fillMaxWidth().clickable(onClick = onLoadMore).padding(16.dp)) }
-        }
     }
 }
 

@@ -6,7 +6,6 @@ import dagger.assisted.Assisted
 import dagger.assisted.AssistedFactory
 import dagger.assisted.AssistedInject
 import dagger.hilt.android.lifecycle.HiltViewModel
-import de.pilzscout.app.data.species.FtObservationEntity
 import de.pilzscout.app.data.species.FtPhotoEntity
 import de.pilzscout.app.data.species.SpeciesEntity
 import de.pilzscout.app.data.species.SpeciesRepository
@@ -32,8 +31,7 @@ data class FtSection(
     val substrates: List<NamedCount>,
     val regions: List<NamedCount>,
     val monthHist: IntArray?,
-    val observations: List<FtObservationEntity>,
-    val leadPhotos: Map<Long, Pair<FtPhotoEntity, File?>>,
+    val photos: List<Pair<FtPhotoEntity, File>>,
 )
 
 data class WikiSection(val article: WikiArticleEntity, val sections: Map<String, String>, val thumb: File?)
@@ -73,17 +71,14 @@ class SpeciesDetailViewModel @AssistedInject constructor(
     private suspend fun load() {
         val sp = repo.byId(speciesId)
         val stats = repo.stats(speciesId)
-        val obs = repo.ftObservations(speciesId)
-        val leads = obs.associate { o -> o.observationId to (repo.ftPhotos(o.observationId).firstOrNull()) }
-            .filterValues { it != null }.mapValues { (_, p) -> p!! to packFiles.existing(p.thumbFile) }
+        val photos = repo.ftPhotosForSpecies(speciesId, 4).mapNotNull { p -> packFiles.existing(p.hdFile ?: p.thumbFile)?.let { p to it } }
         val ft = FtSection(
             stats = stats,
             habitats = stats?.let { counts(it.habitatsJson) } ?: emptyList(),
             substrates = stats?.let { counts(it.substratesJson) } ?: emptyList(),
             regions = stats?.let { counts(it.regionsJson) } ?: emptyList(),
             monthHist = stats?.monthHistJson?.trim('[', ']')?.split(',')?.mapNotNull { it.trim().toIntOrNull() }?.toIntArray()?.takeIf { it.size == 12 },
-            observations = obs,
-            leadPhotos = leads,
+            photos = photos,
         )
         val langs = repo.wikiLanguages(speciesId)
         val wiki = langs.mapNotNull { lang ->
