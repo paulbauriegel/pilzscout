@@ -29,6 +29,7 @@ import kotlinx.serialization.json.Json
 data class ComparisonUiState(
     val loading: Boolean = true,
     val primary: SpeciesEntity? = null,
+    val primaryProbPercent: Int = 0,
     val alternatives: List<Candidate> = emptyList(),
     val selectedAlternativeId: String? = null,
     val species: Map<String, SpeciesEntity> = emptyMap(),
@@ -81,6 +82,7 @@ class ComparisonViewModel @AssistedInject constructor(
         _state.value = ComparisonUiState(
             loading = false,
             primary = f.primary.speciesId?.let { species[it] },
+            primaryProbPercent = (f.primary.prob * 100).toInt(),
             alternatives = f.alternatives,
             selectedAlternativeId = initialAlternativeId,
             species = species,

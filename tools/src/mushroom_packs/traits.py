@@ -147,8 +147,48 @@ def fungitastic_traits(stats: pd.DataFrame) -> list[dict]:
     return rows
 
 
+INFOBOX_FEATURES = {
+    # param -> (feature, value_key regex list, de template, en template)
+    "hymeniumType": ("GILLS_PORES", [("pores", r"pore"), ("teeth", r"teeth|spine"), ("ridges", r"ridge"), ("smooth", r"smooth"), ("gills", r"gill")],
+                     "Fruchtschicht laut Artsteckbrief: {v}.", "Hymenium according to the species infobox: {v}."),
+    "stipeCharacter": ("RING", [("present", r"ring"), ("absent", r"bare|none")], "Stiel laut Artsteckbrief: {v}.", "Stipe according to the species infobox: {v}."),
+    "ecologicalType": ("HABITAT_SUBSTRATE", [("mycorrhizal", r"mycorrhiz"), ("saprotrophic", r"sapro"), ("parasitic", r"parasit")],
+                       "Lebensweise laut Artsteckbrief: {v}.", "Ecology according to the species infobox: {v}."),
+    "capShape": ("CAP", [], "Hutform laut Artsteckbrief: {v}.", "Cap shape according to the species infobox: {v}."),
+}
+
+
+def infobox_traits(infobox: pd.DataFrame) -> list[dict]:
+    """Structured Mycomorphbox parameters become short REFERENCE statements with reliable value keys."""
+    rows = []
+    for r in infobox.to_dict("records"):
+        source = f"wiki:en:{int(r.get('revision') or 0)}"
+        for param, (feature, keys, de_t, en_t) in INFOBOX_FEATURES.items():
+            raw = r.get(param)
+            if not raw or raw != raw or str(raw).strip().upper() in ("NA", "N/A", "UNKNOWN"):
+                continue
+            value = None
+            for key, pattern in keys:
+                if re.search(pattern, str(raw), re.I):
+                    value = key
+                    break
+            for lang, template in (("de", de_t), ("en", en_t)):
+                rows.append({"species_id": r["species_id"], "feature": feature, "lang": lang, "text": template.format(v=raw), "value_key": value, "basis": "REFERENCE", "source": source})
+        stipe = r.get("stipeCharacter")
+        if stipe and stipe == stipe and str(stipe).strip().upper() not in ("NA", "N/A"):
+            value = "volva" if re.search(r"volva", str(stipe), re.I) else ("bulbous" if re.search(r"bulb", str(stipe), re.I) else "plain")
+            for lang, template in (("de", "Stielbasis laut Artsteckbrief: {v}."), ("en", "Stem base according to the species infobox: {v}.")):
+                rows.append({"species_id": r["species_id"], "feature": "BASE_VOLVA", "lang": lang, "text": template.format(v=stipe), "value_key": value, "basis": "REFERENCE", "source": source})
+    return rows
+
+
 def run(cfg: Config) -> Path:
     rows: list[dict] = []
+    infobox_path = cfg.cache_dir / "infobox.parquet"
+    if infobox_path.exists():
+        rows += infobox_traits(pd.read_parquet(infobox_path))
+    else:
+        print("WARNING: no infobox.parquet - run `packs edibility` first for structured morphology")
     wiki_path = cfg.cache_dir / "wiki_articles.parquet"
     if wiki_path.exists():
         wiki = pd.read_parquet(wiki_path)

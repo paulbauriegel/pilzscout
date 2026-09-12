@@ -15,6 +15,7 @@ fun ViewType.label(): String = stringResource(
         ViewType.UNDERSIDE -> R.string.view_underside
         ViewType.STEM_BASE -> R.string.view_stem_base
         ViewType.HABITAT -> R.string.view_habitat
+        ViewType.OTHER -> R.string.view_other
     },
 )
 
@@ -25,6 +26,7 @@ fun ViewType.shortLabel(): String = stringResource(
         ViewType.UNDERSIDE -> R.string.view_underside_short
         ViewType.STEM_BASE -> R.string.view_stem_base_short
         ViewType.HABITAT -> R.string.view_habitat_short
+        ViewType.OTHER -> R.string.view_other_short
     },
 )
 
@@ -35,6 +37,7 @@ fun ViewType.slotShape(): Shape = when (this) {
     ViewType.UNDERSIDE -> MaterialShapes.Cookie12Sided.toShape()
     ViewType.STEM_BASE -> MaterialShapes.Pill.toShape()
     ViewType.HABITAT -> MaterialShapes.Clover4Leaf.toShape()
+    ViewType.OTHER -> MaterialShapes.Circle.toShape()
 }
 
 val ViewType.number: Int get() = ordinal + 1

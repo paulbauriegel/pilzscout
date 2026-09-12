@@ -106,6 +106,18 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                 }
                 androidx.compose.material3.Switch(checked = useGpu, onCheckedChange = viewModel::setUseGpu)
             }
+            val dynamic by viewModel.dynamicColor.collectAsStateWithLifecycle()
+            Row(
+                Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = androidx.compose.foundation.layout.Arrangement.SpaceBetween,
+            ) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.settings_dynamic_color), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.settings_dynamic_color_summary), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                androidx.compose.material3.Switch(checked = dynamic, onCheckedChange = viewModel::setDynamicColor)
+            }
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             Text(stringResource(R.string.settings_about), style = MaterialTheme.typography.titleMedium, modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp))
             Text(stringResource(R.string.settings_about_body), style = MaterialTheme.typography.bodySmall, modifier = Modifier.padding(horizontal = 16.dp))

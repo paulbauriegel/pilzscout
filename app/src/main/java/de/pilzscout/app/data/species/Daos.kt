@@ -15,6 +15,7 @@ data class SpeciesSummary(
     @androidx.room.ColumnInfo(name = "in_germany") val inGermany: Int,
     @androidx.room.ColumnInfo(name = "model_class_index") val modelClassIndex: Int,
     @androidx.room.ColumnInfo(name = "n_observations") val nObservations: Int,
+    val edibility: String?,
 )
 
 data class GroupCount(val name: String, val count: Int)
@@ -35,14 +36,14 @@ interface SpeciesDao {
 
     @Query(
         """SELECT id, scientific_name, binomial, genus, family, common_de, common_en, poisonous, in_germany,
-                  model_class_index, n_observations FROM species
+                  model_class_index, n_observations, edibility FROM species
            ORDER BY in_germany DESC, n_observations DESC, binomial LIMIT :limit OFFSET :offset""",
     )
     suspend fun page(limit: Int, offset: Int): List<SpeciesSummary>
 
     @Query(
         """SELECT DISTINCT s.id, s.scientific_name, s.binomial, s.genus, s.family, s.common_de, s.common_en,
-                  s.poisonous, s.in_germany, s.model_class_index, s.n_observations
+                  s.poisonous, s.in_germany, s.model_class_index, s.n_observations, s.edibility
            FROM species s JOIN species_search ss ON ss.species_id = s.id
            WHERE ss.text_norm LIKE :pattern
            ORDER BY s.in_germany DESC, s.n_observations DESC, s.binomial LIMIT :limit""",
@@ -51,7 +52,7 @@ interface SpeciesDao {
 
     @Query(
         """SELECT id, scientific_name, binomial, genus, family, common_de, common_en, poisonous, in_germany,
-                  model_class_index, n_observations FROM species WHERE genus = :genus ORDER BY binomial""",
+                  model_class_index, n_observations, edibility FROM species WHERE genus = :genus ORDER BY binomial""",
     )
     suspend fun byGenus(genus: String): List<SpeciesSummary>
 

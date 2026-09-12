@@ -57,7 +57,10 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import de.pilzscout.app.R
 import de.pilzscout.app.ui.browse.BrowseSource
+import de.pilzscout.app.ui.components.EdibilityBadge
 import de.pilzscout.app.ui.components.contentLanguage
+import de.pilzscout.app.ui.components.edibilitySourceLabel
+import de.pilzscout.core.model.Edibility
 import de.pilzscout.app.ui.result.displayName
 
 /** Species page with a visible FungiTastic | Wikipedia switch; the two sources are never merged. */
@@ -92,6 +95,10 @@ fun SpeciesDetailScreen(
                 if (sp.inGermany == 0) AssistChip(onClick = {}, label = { Text(stringResource(R.string.species_not_in_germany)) })
                 else AssistChip(onClick = {}, label = { Text(stringResource(R.string.species_in_germany, sp.deOccurrences)) })
                 if (sp.poisonous == 1) AssistChip(onClick = {}, label = { Text(stringResource(R.string.species_poisonous_flag)) })
+            }
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                EdibilityBadge(Edibility.parse(sp.edibility), showUnknown = true)
+                Text(edibilitySourceLabel(sp.edibilitySource), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
             }
             SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth()) {
                 BrowseSource.entries.forEachIndexed { i, s ->

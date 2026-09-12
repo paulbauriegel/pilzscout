@@ -100,7 +100,7 @@ class ObservationExporter @Inject constructor(
         val comparison = runCatching { json.decodeFromString(ComparisonResult.serializer(), o.comparisonJson) }.getOrNull()
         fun ref(id: String?): ExportSpeciesRef {
             val sp = id?.let { speciesMap[it] }
-            return ExportSpeciesRef(id, sp?.scientificName ?: sp?.binomial, sp?.gbifKey)
+            return ExportSpeciesRef(id, sp?.scientificName ?: sp?.binomial, sp?.gbifKey, de.pilzscout.core.model.Edibility.parse(sp?.edibility))
         }
         fun cand(rank: Int, c: Candidate) = ExportCandidate(rank, ref(c.speciesId), c.prob)
 

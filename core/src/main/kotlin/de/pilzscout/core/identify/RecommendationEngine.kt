@@ -18,6 +18,9 @@ object RecommendationEngine {
     ): ViewType? {
         val missing = order.filter { it !in capturedViews }
         if (missing.isEmpty()) return null
+        // Three or more photos of any kind already give a rounded picture; only suggest a specific view when it matters.
+        val unassigned = capturedViews.count { it == ViewType.OTHER }
+        if (unassigned > 0 && descriptor == ConfidenceDescriptor.STRONG && differingFeatures.isEmpty()) return null
         missing.firstOrNull { view -> FeatureViews.featuresFor(view).any { it in differingFeatures } }?.let { return it }
         return if (descriptor != ConfidenceDescriptor.STRONG) missing.first() else null
     }

@@ -33,6 +33,9 @@ data class SpeciesEntity(
     @ColumnInfo(name = "has_wiki_de") val hasWikiDe: Int,
     @ColumnInfo(name = "has_wiki_en") val hasWikiEn: Int,
     @ColumnInfo(name = "n_observations") val nObservations: Int,
+    /** Reference edibility key (see core Edibility), e.g. DEADLY, POISONOUS, EDIBLE; null when unknown. */
+    val edibility: String?,
+    @ColumnInfo(name = "edibility_source") val edibilitySource: String?,
 )
 
 /** Normalised search terms (lower-case, umlauts folded). kind: scientific | common_de | common_en | genus */

@@ -42,7 +42,7 @@ class IdentifyViewModel @Inject constructor(
         viewModelScope.launch {
             for (uri in uris) {
                 val file = runCatching { photoStore.importFromUri(uri) }.getOrNull() ?: continue
-                drafts.add(file, draft.value.nextSuggestedView() ?: ViewType.HABITAT)
+                drafts.add(file, ViewType.OTHER)
             }
         }
     }

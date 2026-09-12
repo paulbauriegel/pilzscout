@@ -12,7 +12,7 @@ import androidx.compose.ui.platform.LocalContext
 @Composable
 fun PilzScoutTheme(
     darkTheme: Boolean = isSystemInDarkTheme(),
-    dynamicColor: Boolean = true,
+    dynamicColor: Boolean = false,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when {
@@ -20,8 +20,8 @@ fun PilzScoutTheme(
             val context = LocalContext.current
             if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
         }
-        darkTheme -> GreenDarkColorScheme
-        else -> GreenLightColorScheme
+        darkTheme -> ForestDarkColorScheme
+        else -> ForestLightColorScheme
     }
 
     MaterialExpressiveTheme(

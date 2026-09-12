@@ -55,6 +55,8 @@ def build(cfg: Config, out: Path) -> Path:
     observations = _optional_parquet(cfg.cache_dir / "ft_observations.parquet")
     photos = _optional_parquet(cfg.cache_dir / "ft_photos.parquet")
     traits = _optional_parquet(cfg.cache_dir / "traits.parquet")
+    edibility = _optional_parquet(cfg.cache_dir / "edibility.parquet")
+    edibility_by_id = edibility.set_index("species_id").to_dict("index") if edibility is not None else {}
 
     if gbif is None:
         print("WARNING: cache/gbif.parquet missing - every species is treated as recorded in Germany")
@@ -82,6 +84,7 @@ def build(cfg: Config, out: Path) -> Path:
             g = gbif_by_id.get(s["id"], {})
             names = common.get(s["id"], {})
             langs = wiki_langs.get(s["id"], set())
+            ed = edibility_by_id.get(s["id"], {})
             species_rows.append(
                 (
                     s["id"], s["scientific_name"], s["binomial"], s["genus"], s["specific_epithet"], s.get("family"),
@@ -90,6 +93,8 @@ def build(cfg: Config, out: Path) -> Path:
                     int(g.get("de_occurrences", 0) or 0),
                     int(g.get("in_germany", 1)) if g else 1,
                     int(s["model_class_index"]), int("de" in langs), int("en" in langs), int(n_obs.get(s["id"], 0)),
+                    ed.get("edibility") if ed.get("edibility") == ed.get("edibility") else None,
+                    ed.get("edibility_source") if ed.get("edibility_source") == ed.get("edibility_source") else None,
                 )
             )
             search_rows.append((s["id"], normalize(s["binomial"]), "scientific"))
@@ -100,7 +105,7 @@ def build(cfg: Config, out: Path) -> Path:
         conn.executemany(
             """INSERT INTO species (id, scientific_name, binomial, genus, specific_epithet, family, order_name, class_name,
                common_de, common_en, poisonous, gbif_key, de_occurrences, in_germany, model_class_index, has_wiki_de,
-               has_wiki_en, n_observations) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+               has_wiki_en, n_observations, edibility, edibility_source) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             species_rows,
         )
         conn.executemany("INSERT INTO species_search (species_id, text_norm, kind) VALUES (?,?,?)", search_rows)

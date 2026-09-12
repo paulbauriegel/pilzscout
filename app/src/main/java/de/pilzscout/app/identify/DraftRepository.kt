@@ -22,7 +22,8 @@ data class Draft(
     val language: String = "en",
 ) {
     val capturedViews: Set<ViewType> get() = photos.map { it.viewType }.toSet()
-    fun nextSuggestedView(): ViewType? = ViewType.entries.firstOrNull { it !in capturedViews }
+    fun nextSuggestedView(): ViewType? = ViewType.suggestedViews.firstOrNull { it !in capturedViews }
+    val unassigned: List<DraftPhoto> get() = photos.filter { it.viewType == ViewType.OTHER }
 }
 
 /** The observation currently being composed on the Identify screen (in memory; photos are cache files). */

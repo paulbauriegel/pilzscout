@@ -24,6 +24,6 @@ abstract class SpeciesDatabase : RoomDatabase() {
 
     companion object {
         /** Bump together with the pack schemaVersion whenever entities change. */
-        const val VERSION = 1
+        const val VERSION = 2
     }
 }

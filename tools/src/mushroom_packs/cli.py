@@ -35,6 +35,14 @@ def wiki(limit: int = typer.Option(None), lang: str = typer.Option("de,en")) -> 
 
 
 @app.command()
+def edibility() -> None:
+    """Reference edibility from the English Wikipedia mushroom infobox (+ FungiTastic poisonous flag)."""
+    from .edibility import run
+
+    run(CFG)
+
+
+@app.command()
 def fungitastic(hd: bool = typer.Option(False), masks: str = typer.Option(None)) -> None:
     """Aggregate FungiTastic metadata, sample observations, generate thumbnails."""
     from .fungitastic import run

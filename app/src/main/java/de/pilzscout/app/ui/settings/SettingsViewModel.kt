@@ -15,7 +15,14 @@ import javax.inject.Inject
 class SettingsViewModel @Inject constructor(
     private val settings: SettingsRepository,
     classifierProvider: de.pilzscout.app.ml.ClassifierProvider,
+    val speciesImages: de.pilzscout.app.data.species.SpeciesImages,
 ) : ViewModel() {
+
+    val dynamicColor: StateFlow<Boolean> = settings.dynamicColor.stateIn(viewModelScope, SharingStarted.Eagerly, false)
+
+    fun setDynamicColor(enabled: Boolean) {
+        viewModelScope.launch { settings.setDynamicColor(enabled) }
+    }
 
     val language: StateFlow<AppLanguage> =
         settings.language.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), AppLanguage.SYSTEM)

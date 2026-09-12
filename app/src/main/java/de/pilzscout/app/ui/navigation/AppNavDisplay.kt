@@ -1,13 +1,14 @@
 package de.pilzscout.app.ui.navigation
 
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Icon
-import androidx.compose.material3.NavigationBar
-import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
+import androidx.compose.foundation.layout.Box
+import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.ui.Alignment
+import de.pilzscout.app.ui.components.FloatingNavBar
+import de.pilzscout.app.ui.components.NavItem
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.History
+import androidx.compose.material.icons.filled.MenuBook
+import androidx.compose.material.icons.outlined.MenuBook
 import androidx.compose.material.icons.filled.PhotoCamera
 import androidx.compose.material.icons.filled.Search
 import androidx.compose.material.icons.outlined.History
@@ -40,7 +41,7 @@ private data class Tab(val key: TopLevelKey, val label: Int, val selected: Image
 
 private val tabs = listOf(
     Tab(IdentifyKey, R.string.nav_identify, Icons.Filled.PhotoCamera, Icons.Outlined.PhotoCamera),
-    Tab(BrowseKey, R.string.nav_browse, Icons.Filled.Search, Icons.Outlined.Search),
+    Tab(BrowseKey, R.string.nav_browse, Icons.Filled.MenuBook, Icons.Outlined.MenuBook),
     Tab(HistoryKey, R.string.nav_history, Icons.Filled.History, Icons.Outlined.History),
 )
 
@@ -51,26 +52,10 @@ fun AppNavDisplay() {
     val current = nav.backStack.lastOrNull()
     val showBottomBar = current is TopLevelKey
 
-    Scaffold(
-        bottomBar = {
-            if (showBottomBar) {
-                NavigationBar {
-                    tabs.forEach { tab ->
-                        val selected = nav.topLevelKey == tab.key
-                        NavigationBarItem(
-                            selected = selected,
-                            onClick = { nav.switchTo(tab.key) },
-                            icon = { Icon(if (selected) tab.selected else tab.unselected, contentDescription = null) },
-                            label = { Text(stringResource(tab.label)) },
-                        )
-                    }
-                }
-            }
-        },
-    ) { padding ->
+    Box(Modifier.fillMaxSize()) {
         NavDisplay(
             backStack = nav.backStack,
-            modifier = Modifier.padding(padding),
+            modifier = Modifier.fillMaxSize(),
             onBack = { nav.pop() },
             entryDecorators = listOf(
                 rememberSaveableStateHolderNavEntryDecorator(),
@@ -137,6 +122,14 @@ fun AppNavDisplay() {
                 }
             },
         )
+        if (showBottomBar) {
+            FloatingNavBar(
+                items = tabs.map { NavItem(stringResource(it.label), it.selected, it.unselected) },
+                selected = tabs.indexOfFirst { it.key == nav.topLevelKey }.coerceAtLeast(0),
+                onSelect = { nav.switchTo(tabs[it].key) },
+                modifier = Modifier.align(Alignment.BottomCenter),
+            )
+        }
     }
 }
 

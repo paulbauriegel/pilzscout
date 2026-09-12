@@ -56,6 +56,9 @@ class PackRepository @Inject constructor(
         val manifest = runCatching { source.manifest() }.getOrNull()
         val installed = PackComponent.entries.mapNotNull { c -> installer.readInstalled(c)?.let { c to it } }.toMap()
         _state.update { it.copy(manifest = manifest, installed = installed, loaded = true) }
+        // The bundled pack is local, so newer versions of already-installed components are applied automatically.
+        val outdated = _state.value.let { s -> installed.keys.filter { s.isOutdated(it) } }
+        if (outdated.isNotEmpty()) install(outdated)
     }
 
     /** Installs the given components sequentially (required ones first). Safe to call repeatedly. */

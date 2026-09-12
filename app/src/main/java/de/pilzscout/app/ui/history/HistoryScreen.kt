@@ -9,6 +9,7 @@ import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.FlowRow
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -17,19 +18,21 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.Close
-import androidx.compose.material.icons.outlined.CloudOff
 import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.material.icons.outlined.Edit
-import androidx.compose.material.icons.outlined.FileDownload
-import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.FileUpload
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.LocationOn
 import androidx.compose.material.icons.outlined.SelectAll
+import androidx.compose.material.icons.outlined.Shield
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Checkbox
+import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.FilterChip
-import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.ListItem
@@ -56,6 +59,7 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.pluralStringResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontStyle
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
@@ -64,6 +68,9 @@ import de.pilzscout.app.R
 import de.pilzscout.app.ui.components.TabScaffold
 import de.pilzscout.app.ui.result.displayName
 import java.io.File
+import java.time.Instant
+import java.time.LocalDate
+import java.time.ZoneId
 import java.util.Date
 import kotlin.math.roundToInt
 
@@ -74,7 +81,6 @@ fun HistoryScreen(
     viewModel: HistoryViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
-    val context = LocalContext.current
     val snackbar = remember { SnackbarHostState() }
     var pendingExport by remember { mutableStateOf<Set<String>>(emptySet()) }
     var confirmDelete by remember { mutableStateOf<Set<String>?>(null) }
@@ -92,6 +98,7 @@ fun HistoryScreen(
         }
     }
     fun startExport(ids: Set<String>) {
+        if (ids.isEmpty()) return
         pendingExport = ids
         exportLauncher.launch(if (ids.size == 1) "pilzscout-observation-${ids.first().take(8)}.zip" else "pilzscout-observations-${ids.size}.zip")
     }
@@ -105,36 +112,42 @@ fun HistoryScreen(
                     navigationIcon = { IconButton(onClick = viewModel::clearSelection) { Icon(Icons.Filled.Close, contentDescription = stringResource(R.string.history_clear_selection)) } },
                     actions = {
                         IconButton(onClick = viewModel::selectAllVisible) { Icon(Icons.Outlined.SelectAll, contentDescription = stringResource(R.string.history_select_all)) }
-                        IconButton(onClick = { startExport(state.selected) }) { Icon(Icons.Outlined.FileDownload, contentDescription = stringResource(R.string.history_export)) }
+                        IconButton(onClick = { startExport(state.selected) }) { Icon(Icons.Outlined.FileUpload, contentDescription = stringResource(R.string.history_export)) }
                         IconButton(onClick = { confirmDelete = state.selected }) { Icon(Icons.Outlined.Delete, contentDescription = stringResource(R.string.history_delete)) }
                     },
                 )
             },
             snackbarHost = { SnackbarHost(snackbar) },
-        ) { padding -> HistoryList(state, padding, viewModel, onOpenObservation, selecting = true, onExportOne = { startExport(setOf(it)) }, onDeleteOne = { confirmDelete = setOf(it) }) }
+        ) { padding -> HistoryList(state, padding, viewModel, onOpenObservation, selecting = true, onExportOne = { startExport(setOf(it)) }, showLocalNote = false) }
     } else {
-        TabScaffold(title = stringResource(R.string.history_title), onOpenSettings = onOpenSettings) { padding ->
-            Column(Modifier.fillMaxSize().padding(padding)) {
-                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+        TabScaffold(
+            title = stringResource(R.string.history_title),
+            subtitle = stringResource(R.string.history_header_sub),
+            headerIcon = Icons.Outlined.History,
+            onOpenSettings = onOpenSettings,
+            actions = {
+                FilledTonalButton(onClick = { startExport(state.items.map { it.entry.observation.id }.toSet()) }, enabled = state.items.isNotEmpty()) {
+                    Icon(Icons.Outlined.FileUpload, contentDescription = null, Modifier.size(18.dp))
+                    Text(stringResource(R.string.history_export), Modifier.padding(start = 6.dp))
+                }
+            },
+        ) { padding ->
+            Column(Modifier.fillMaxSize()) {
+                Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                     OutlinedTextField(
                         value = state.filter.query,
                         onValueChange = viewModel::setQuery,
                         modifier = Modifier.weight(1f),
                         placeholder = { Text(stringResource(R.string.history_search_hint)) },
                         singleLine = true,
+                        shape = MaterialTheme.shapes.extraLarge,
                     )
                     FilterChip(selected = showFilters, onClick = { showFilters = !showFilters }, label = { Text(stringResource(R.string.history_filters)) })
                 }
                 if (showFilters) FilterBar(state.filter, viewModel)
-                Text(
-                    stringResource(R.string.history_counts, state.items.size, state.total),
-                    style = MaterialTheme.typography.labelMedium,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
-                )
                 Box(Modifier.fillMaxSize()) {
-                    HistoryList(state, androidx.compose.foundation.layout.PaddingValues(0.dp), viewModel, onOpenObservation, selecting = false, onExportOne = { startExport(setOf(it)) }, onDeleteOne = { confirmDelete = setOf(it) })
-                    SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter))
+                    HistoryList(state, padding, viewModel, onOpenObservation, selecting = false, onExportOne = { startExport(setOf(it)) }, showLocalNote = true)
+                    SnackbarHost(snackbar, Modifier.align(Alignment.BottomCenter).padding(bottom = 96.dp))
                 }
             }
         }
@@ -150,7 +163,6 @@ fun HistoryScreen(
         )
     }
     if (state.correctionTarget != null) CorrectionSheet(state, viewModel)
-    @Suppress("UNUSED_VARIABLE") val unused = context
 }
 
 @Composable
@@ -167,80 +179,105 @@ private fun FilterBar(filter: HistoryFilter, viewModel: HistoryViewModel) {
 }
 
 @Composable
+private fun dayLabel(epochMs: Long): String {
+    val context = LocalContext.current
+    val date = Instant.ofEpochMilli(epochMs).atZone(ZoneId.systemDefault()).toLocalDate()
+    val today = LocalDate.now()
+    val formatted = DateFormat.getMediumDateFormat(context).format(Date(epochMs))
+    return when (date) {
+        today -> stringResource(R.string.history_today) + ", " + formatted
+        today.minusDays(1) -> stringResource(R.string.history_yesterday) + ", " + formatted
+        else -> formatted
+    }
+}
+
+@Composable
 private fun HistoryList(
     state: HistoryUiState,
-    padding: androidx.compose.foundation.layout.PaddingValues,
+    padding: PaddingValues,
     viewModel: HistoryViewModel,
     onOpen: (String) -> Unit,
     selecting: Boolean,
     onExportOne: (String) -> Unit,
-    onDeleteOne: (String) -> Unit,
+    showLocalNote: Boolean,
 ) {
-    val context = LocalContext.current
     if (state.items.isEmpty()) {
-        Box(Modifier.fillMaxSize().padding(padding), contentAlignment = Alignment.Center) {
-            Text(stringResource(if (state.total == 0) R.string.history_empty else R.string.history_no_matches), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(24.dp))
+        Column(Modifier.fillMaxSize().padding(padding).padding(16.dp), verticalArrangement = Arrangement.spacedBy(12.dp)) {
+            if (showLocalNote) LocalNoteCard()
+            Text(stringResource(if (state.total == 0) R.string.history_empty else R.string.history_no_matches), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(8.dp))
         }
         return
     }
-    LazyColumn(Modifier.fillMaxSize().padding(padding)) {
-        items(state.items, key = { it.entry.observation.id }) { item ->
-            val o = item.entry.observation
-            val id = o.id
-            val selected = id in state.selected
-            val shown = item.corrected ?: item.primary
-            val lead = item.entry.photos.minByOrNull { it.position }
-            ListItem(
-                modifier = Modifier
-                    .background(if (selected) MaterialTheme.colorScheme.secondaryContainer else MaterialTheme.colorScheme.surface)
-                    .combinedClickable(onClick = { if (selecting) viewModel.toggleSelect(id) else onOpen(id) }, onLongClick = { viewModel.toggleSelect(id) }),
-                leadingContent = {
-                    Box(Modifier.size(64.dp).clip(MaterialTheme.shapes.medium).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
-                        if (lead != null) AsyncImage(model = File(lead.thumbPath), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
-                        if (selecting) Checkbox(checked = selected, onCheckedChange = { viewModel.toggleSelect(id) }, modifier = Modifier.align(Alignment.TopStart))
-                    }
-                },
-                headlineContent = {
-                    Text(shown.displayName() + if (item.corrected != null) " ✎" else "")
-                },
-                supportingContent = {
-                    Column {
-                        Text(shown?.binomial ?: o.primarySpeciesId, fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall)
-                        Text(
-                            listOfNotNull(
-                                DateFormat.getMediumDateFormat(context).format(Date(o.capturedAt)),
-                                if (o.locationIncluded && o.lat != null && o.lon != null) "%.2f, %.2f".format(o.lat, o.lon) else null,
-                                "${(o.primaryProb * 100).roundToInt()} %",
-                            ).joinToString(" · "),
-                            style = MaterialTheme.typography.bodySmall,
-                        )
-                        Row(horizontalArrangement = Arrangement.spacedBy(6.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.CloudOff, contentDescription = stringResource(R.string.history_offline_result), modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
-                            Text(stringResource(if (o.mode == "offline") R.string.history_offline_result else R.string.history_online_result), style = MaterialTheme.typography.labelSmall)
-                            Icon(
-                                if (o.userConfirmed) Icons.Filled.CheckCircle else Icons.Outlined.HelpOutline,
-                                contentDescription = null,
-                                modifier = Modifier.size(14.dp),
-                                tint = if (o.userConfirmed) MaterialTheme.colorScheme.primary else MaterialTheme.colorScheme.onSurfaceVariant,
-                            )
-                            Text(stringResource(if (o.userConfirmed) R.string.history_confirmed else R.string.history_unconfirmed), style = MaterialTheme.typography.labelSmall)
-                        }
-                    }
-                },
-                trailingContent = {
-                    if (!selecting) {
-                        Column {
-                            IconButton(onClick = { viewModel.startCorrection(id) }) { Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.history_correct)) }
-                            IconButton(onClick = { onExportOne(id) }) { Icon(Icons.Outlined.FileDownload, contentDescription = stringResource(R.string.history_export)) }
-                        }
-                    }
-                },
-            )
-            HorizontalDivider()
+    val groups = state.items.groupBy { Instant.ofEpochMilli(it.entry.observation.capturedAt).atZone(ZoneId.systemDefault()).toLocalDate() }
+    LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, top = 4.dp, bottom = padding.calculateBottomPadding() + 8.dp), verticalArrangement = Arrangement.spacedBy(10.dp)) {
+        if (showLocalNote) item { LocalNoteCard() }
+        groups.forEach { (_, items) ->
+            item(key = "h-${items.first().entry.observation.id}") {
+                Text(dayLabel(items.first().entry.observation.capturedAt), style = MaterialTheme.typography.titleSmall, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(top = 6.dp))
+            }
+            items(items, key = { it.entry.observation.id }) { item -> HistoryCard(item, selecting, item.entry.observation.id in state.selected, viewModel, onOpen, onExportOne) }
         }
-        item { Box(Modifier.height(24.dp)) }
     }
-    @Suppress("UNUSED_VARIABLE") val unused = onDeleteOne
+}
+
+@Composable
+private fun LocalNoteCard() {
+    Row(
+        Modifier.fillMaxWidth().clip(RoundedCornerShape(16.dp)).background(MaterialTheme.colorScheme.secondaryContainer).padding(14.dp),
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Icon(Icons.Outlined.Shield, contentDescription = null, tint = MaterialTheme.colorScheme.onSecondaryContainer)
+        Column {
+            Text(stringResource(R.string.history_local_title), style = MaterialTheme.typography.titleSmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+            Text(stringResource(R.string.history_local_body), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSecondaryContainer)
+        }
+    }
+}
+
+@Composable
+private fun HistoryCard(item: HistoryItem, selecting: Boolean, selected: Boolean, viewModel: HistoryViewModel, onOpen: (String) -> Unit, onExportOne: (String) -> Unit) {
+    val o = item.entry.observation
+    val shown = item.corrected ?: item.primary
+    val lead = item.entry.photos.minByOrNull { it.position }
+    Row(
+        Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(18.dp))
+            .background(if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.surfaceContainerLow)
+            .combinedClickable(onClick = { if (selecting) viewModel.toggleSelect(o.id) else onOpen(o.id) }, onLongClick = { viewModel.toggleSelect(o.id) })
+            .padding(10.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(12.dp),
+    ) {
+        Box(Modifier.size(84.dp).clip(RoundedCornerShape(14.dp)).background(MaterialTheme.colorScheme.surfaceContainerHigh)) {
+            if (lead != null) AsyncImage(model = File(lead.thumbPath), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+            if (selecting) Checkbox(checked = selected, onCheckedChange = { viewModel.toggleSelect(o.id) }, modifier = Modifier.align(Alignment.TopStart))
+        }
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                Text(shown.displayName(), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.weight(1f, fill = false))
+                if (o.userConfirmed) Icon(Icons.Filled.CheckCircle, contentDescription = stringResource(R.string.history_confirmed), tint = MaterialTheme.colorScheme.primary, modifier = Modifier.size(16.dp))
+                if (item.corrected != null) Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.history_correct), modifier = Modifier.size(16.dp))
+            }
+            Text(shown?.binomial ?: o.primarySpeciesId, fontStyle = FontStyle.Italic, style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("${(o.primaryProb * 100).roundToInt()} %", style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.primary, fontWeight = FontWeight.Bold)
+            Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(4.dp)) {
+                Icon(Icons.Outlined.LocationOn, contentDescription = null, modifier = Modifier.size(14.dp), tint = MaterialTheme.colorScheme.onSurfaceVariant)
+                Text(
+                    if (o.locationIncluded && o.lat != null && o.lon != null) "%.2f, %.2f".format(o.lat, o.lon) + " · " + stringResource(R.string.history_offline_result)
+                    else stringResource(R.string.history_offline_result),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
+        if (!selecting) {
+            Column {
+                IconButton(onClick = { viewModel.startCorrection(o.id) }, Modifier.size(36.dp)) { Icon(Icons.Outlined.Edit, contentDescription = stringResource(R.string.history_correct)) }
+                IconButton(onClick = { onExportOne(o.id) }, Modifier.size(36.dp)) { Icon(Icons.Outlined.FileUpload, contentDescription = stringResource(R.string.history_export)) }
+            }
+        }
+    }
 }
 
 @Composable
@@ -250,16 +287,8 @@ private fun CorrectionSheet(state: HistoryUiState, viewModel: HistoryViewModel) 
         Column(Modifier.padding(horizontal = 16.dp).padding(bottom = 24.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
             Text(stringResource(R.string.history_correct_title), style = MaterialTheme.typography.titleLarge)
             Text(stringResource(R.string.history_correct_hint), style = MaterialTheme.typography.bodyMedium)
-            OutlinedTextField(
-                value = query,
-                onValueChange = { query = it; viewModel.searchCorrection(it) },
-                modifier = Modifier.fillMaxWidth(),
-                placeholder = { Text(stringResource(R.string.browse_search_hint)) },
-                singleLine = true,
-            )
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                TextButton(onClick = { viewModel.applyCorrection(null) }) { Text(stringResource(R.string.history_confirm_as_is)) }
-            }
+            OutlinedTextField(value = query, onValueChange = { query = it; viewModel.searchCorrection(it) }, modifier = Modifier.fillMaxWidth(), placeholder = { Text(stringResource(R.string.browse_search_hint)) }, singleLine = true)
+            TextButton(onClick = { viewModel.applyCorrection(null) }) { Text(stringResource(R.string.history_confirm_as_is)) }
             LazyColumn(Modifier.fillMaxWidth().height(360.dp)) {
                 items(state.correctionResults, key = { it.id }) { s ->
                     ListItem(

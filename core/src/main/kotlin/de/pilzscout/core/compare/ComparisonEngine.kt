@@ -47,7 +47,8 @@ typealias PhotoRanking = Map<ViewType, List<String>>
  * Rules:
  * - no trait on either side                       -> INSUFFICIENT_REFERENCE
  * - both sides have the same normalised value      -> SHARED
- * - values differ but the view needed is missing   -> NOT_VISIBLE
+ * - values differ but the view needed is missing   -> NOT_VISIBLE (unless unassigned OTHER photos exist,
+ *                                                     which are used as a fallback for every feature)
  * - values differ and the view exists              -> whichever species that photo ranks higher
  * - REGION_SEASON compares month frequencies from FungiTastic (ratio >= 1.5 decides), no month -> INSUFFICIENT
  */
@@ -75,8 +76,9 @@ object ComparisonEngine {
             val av = alternative.valueKey(feature)
             if (pv != null && av != null && pv == av) return@map FeatureRow(feature, EvidenceState.SHARED, p, a, Basis.REFERENCE)
             val view = FeatureViews.requiredView(feature)
-            if (view == null || view !in capturedViews) return@map FeatureRow(feature, EvidenceState.NOT_VISIBLE, p, a)
-            val ranking = photoRanking[view].orEmpty()
+            val hasOther = ViewType.OTHER in capturedViews
+            if (view == null || (view !in capturedViews && !hasOther)) return@map FeatureRow(feature, EvidenceState.NOT_VISIBLE, p, a)
+            val ranking = if (view in capturedViews) photoRanking[view].orEmpty() else photoRanking[ViewType.OTHER].orEmpty()
             val pi = ranking.indexOf(primary.speciesId).let { if (it < 0) Int.MAX_VALUE else it }
             val ai = ranking.indexOf(alternative.speciesId).let { if (it < 0) Int.MAX_VALUE else it }
             when {

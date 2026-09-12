@@ -34,7 +34,7 @@ data class ExportObservation(
 data class ExportLocation(val lat: Double, val lon: Double, val precisionKm: Double = 1.0)
 
 @Serializable
-data class ExportSpeciesRef(val speciesId: String?, val scientificName: String?, val gbifKey: Long?)
+data class ExportSpeciesRef(val speciesId: String?, val scientificName: String?, val gbifKey: Long?, val edibility: de.pilzscout.core.model.Edibility? = null)
 
 @Serializable
 data class ExportCandidate(val rank: Int, val species: ExportSpeciesRef, val prob: Float)

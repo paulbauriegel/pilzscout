@@ -33,6 +33,13 @@ class SettingsRepository @Inject constructor(@ApplicationContext private val con
         val language = stringPreferencesKey("language")
         val useGpu = booleanPreferencesKey("use_gpu")
         val includeLocationByDefault = booleanPreferencesKey("include_location")
+        val dynamicColor = booleanPreferencesKey("dynamic_color")
+    }
+
+    val dynamicColor: Flow<Boolean> = context.dataStore.data.map { it[Keys.dynamicColor] ?: false }
+
+    suspend fun setDynamicColor(enabled: Boolean) {
+        context.dataStore.edit { it[Keys.dynamicColor] = enabled }
     }
 
     val language: Flow<AppLanguage> = context.dataStore.data.map { AppLanguage.fromTag(it[Keys.language]) }
