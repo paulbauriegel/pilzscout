@@ -1,0 +1,27 @@
+# Gradle / Android
+.gradle/
+build/
+*/build/
+local.properties
+.kotlin/
+*.apk
+*.aab
+.cxx/
+captures/
+
+# IDE
+.idea/
+*.iml
+.DS_Store
+
+# Packs and model artefacts (built by tools/, too large for git)
+packs/
+app/src/main/assets/packs/
+*.tflite
+*.db
+
+# Python
+tools/.venv/
+tools/cache/
+tools/**/__pycache__/
+tools/.pytest_cache/

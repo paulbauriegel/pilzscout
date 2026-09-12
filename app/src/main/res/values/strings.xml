@@ -1,0 +1,28 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">PilzScout</string>
+
+    <!-- Navigation -->
+    <string name="nav_identify">Identify</string>
+    <string name="nav_browse">Browse</string>
+    <string name="nav_history">History</string>
+    <string name="action_settings">Settings</string>
+    <string name="action_back">Back</string>
+
+    <!-- Settings -->
+    <string name="settings_title">Settings</string>
+    <string name="settings_language">Language</string>
+    <string name="settings_language_system">System default</string>
+    <string name="settings_language_de">Deutsch</string>
+    <string name="settings_language_en">English</string>
+    <string name="settings_offline_data">Offline data</string>
+    <string name="settings_offline_data_summary">Manage the Germany offline pack</string>
+    <string name="settings_model_info">Model information</string>
+    <string name="settings_about">About and licenses</string>
+
+    <!-- Placeholders for phase 0 -->
+    <string name="identify_title">Identify a mushroom</string>
+    <string name="browse_title">Browse</string>
+    <string name="history_title">History</string>
+    <string name="placeholder_coming_soon">Coming in the next build</string>
+</resources>
