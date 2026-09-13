@@ -82,6 +82,7 @@ dependencies {
     implementation(platform(libs.compose.bom))
     implementation(libs.compose.ui)
     implementation(libs.compose.ui.graphics)
+    implementation(libs.compose.foundation)
     implementation(libs.compose.ui.tooling.preview)
     implementation(libs.compose.animation)
     implementation(libs.compose.material3)
@@ -112,6 +113,8 @@ dependencies {
     implementation(libs.work.runtime.ktx)
     implementation(libs.datastore.preferences)
     implementation(libs.androidx.exifinterface)
+    implementation(libs.maplibre.compose)
+    runtimeOnly(libs.maplibre.compose.runtime.vulkan.android)
 
     testImplementation(libs.junit)
     testImplementation(libs.kotlin.test)

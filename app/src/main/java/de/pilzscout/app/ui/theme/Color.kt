@@ -89,10 +89,5 @@ object ForestColors {
     val navOnBar = Color(0xFFF2E9DA)
     val navSelected = Color(0xFFDCE8D4)
     val navOnSelected = Color(0xFF1E4A2A)
-    val hillsFarLight = Color(0xFFB9CBB0)
-    val hillsMidLight = Color(0xFF8AA983)
-    val hillsNearLight = Color(0xFF4F7A52)
-    val hillsFarDark = Color(0xFF2A3A2C)
-    val hillsMidDark = Color(0xFF223125)
-    val hillsNearDark = Color(0xFF17261A)
+    // The forest backdrop palette lives in tools/src/mushroom_packs/backdrop.py (rendered to drawable-nodpi/forest_*.webp).
 }

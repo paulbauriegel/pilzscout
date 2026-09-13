@@ -63,6 +63,22 @@ adb install -r app/build/outputs/apk/debug/app-debug.apk
 On first launch the app installs the bundled "Germany offline pack" component by component;
 identification is available once the model and the core species data are installed.
 
+## Forest backdrop artwork
+
+The layered forest behind the three tabs is generated, not hand-drawn. `packs backdrop` renders
+three horizontally tileable layers (far mountains with mist, middle and near tree lines) for the
+light and the dark theme with Pillow and writes them as lossless WebP to
+`app/src/main/res/drawable-nodpi/forest_{far,mid,near}_{light,dark}.webp`. The app tiles the layers
+and shifts them at different speeds while the home pager is swiped.
+
+```bash
+cd tools
+uv run packs backdrop --preview   # add --seed/--width/--height to vary; previews land in cache/build/backdrop/
+```
+
+Colours, hill shapes and tree density are constants at the top of `tools/src/mushroom_packs/backdrop.py`;
+edit, rerun, then `./gradlew :app:installDebug`.
+
 ## How identification works
 
 1. Each photo is resized (shorter edge 366 px), center-cropped to 320 px and fed to the model as

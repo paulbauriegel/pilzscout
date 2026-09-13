@@ -33,8 +33,8 @@ import de.pilzscout.app.R
 
 /**
  * Top-level tab chrome from the design reference: brand row (logo + app name + settings), a section
- * header with icon, big title and optional subtitle, the forest backdrop at the bottom, and the content.
- * The bottom bar is provided by the navigation host and overlays the backdrop.
+ * header with icon, big title and optional subtitle, and the content. It paints no background: the tab
+ * is a page of the home pager, which draws the shared forest backdrop behind it and the bottom bar over it.
  */
 @Composable
 fun TabScaffold(
@@ -46,13 +46,10 @@ fun TabScaffold(
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    Box(modifier.fillMaxSize().background(MaterialTheme.colorScheme.background)) {
-        ForestBackdrop(Modifier.align(Alignment.BottomCenter))
-        Column(Modifier.fillMaxSize().statusBarsPadding()) {
-            BrandRow(onOpenSettings)
-            SectionHeader(title, subtitle, headerIcon, actions)
-            Box(Modifier.fillMaxSize()) { content(PaddingValues(bottom = 96.dp)) }
-        }
+    Column(modifier.fillMaxSize().statusBarsPadding()) {
+        BrandRow(onOpenSettings)
+        SectionHeader(title, subtitle, headerIcon, actions)
+        Box(Modifier.fillMaxSize()) { content(PaddingValues(bottom = 96.dp)) }
     }
 }
 

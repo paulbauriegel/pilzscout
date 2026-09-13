@@ -4,14 +4,10 @@ import androidx.navigation3.runtime.NavKey
 import de.pilzscout.core.model.ViewType
 import kotlinx.serialization.Serializable
 
-/** All navigation destinations. Top-level keys are the three bottom-navigation tabs. */
+/** All navigation destinations. [HomeKey] hosts the three bottom-navigation tabs as swipeable pages. */
 sealed interface AppKey : NavKey
 
-sealed interface TopLevelKey : AppKey
-
-@Serializable data object IdentifyKey : TopLevelKey
-@Serializable data object BrowseKey : TopLevelKey
-@Serializable data object HistoryKey : TopLevelKey
+@Serializable data object HomeKey : AppKey
 
 @Serializable data object SettingsKey : AppKey
 @Serializable data class CameraKey(val viewType: ViewType, val replacePhotoId: String? = null) : AppKey

@@ -1,6 +1,8 @@
 """`packs` command line. Each step caches its work under tools/cache and is safe to rerun."""
 from __future__ import annotations
 
+from pathlib import Path
+
 import typer
 
 from .config import CFG
@@ -85,6 +87,21 @@ def package(
     from .package import run
 
     run(CFG, version=version, copy_to_assets=assets, prefer_fp16=fp16)
+
+
+@app.command()
+def backdrop(
+    out: Path = typer.Option(None, help="Output directory (default: app/src/main/res/drawable-nodpi)"),
+    width: int = typer.Option(2400, help="Tile width in pixels"),
+    height: int = typer.Option(600, help="Tile height in pixels (170 dp at the Pixel 7 Pro density)"),
+    seed: int = typer.Option(20260913, help="Seed for the hill and tree geometry"),
+    preview: bool = typer.Option(False, help="Also write composited previews under cache/build/backdrop/"),
+) -> None:
+    """Render the parallax forest backdrop (far/mid/near x light/dark, lossless WebP) into the app drawables."""
+    from .backdrop import run
+
+    for path in run(CFG, out=out, width=width, height=height, seed=seed, write_preview=preview):
+        typer.echo(f"wrote {path} ({path.stat().st_size / 1e3:.0f} kB)")
 
 
 if __name__ == "__main__":

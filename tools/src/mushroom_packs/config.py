@@ -26,6 +26,7 @@ class Config:
     out_dir: Path = field(default_factory=lambda: _env_path("PACKS_OUT_DIR", REPO_DIR / "packs"))
     assets_dir: Path = field(default_factory=lambda: _env_path("PACKS_ASSETS_DIR", REPO_DIR / "app" / "src" / "main" / "assets" / "packs"))
     schemas_dir: Path = field(default_factory=lambda: _env_path("PACKS_SCHEMAS_DIR", REPO_DIR / "app" / "schemas"))
+    res_dir: Path = field(default_factory=lambda: _env_path("PACKS_RES_DIR", REPO_DIR / "app" / "src" / "main" / "res"))
 
     # GBIF
     gbif_min_de_occurrences: int = int(os.environ.get("PACKS_GBIF_MIN_DE", "1"))
