@@ -92,8 +92,8 @@ def package(
 @app.command()
 def backdrop(
     out: Path = typer.Option(None, help="Output directory (default: app/src/main/res/drawable-nodpi)"),
-    width: int = typer.Option(2400, help="Tile width in pixels"),
-    height: int = typer.Option(600, help="Tile height in pixels (170 dp at the Pixel 7 Pro density)"),
+    width: int = typer.Option(2800, help="Tile width in pixels"),
+    height: int = typer.Option(700, help="Tile height in pixels (200 dp at the Pixel 7 Pro density)"),
     seed: int = typer.Option(20260913, help="Seed for the hill and tree geometry"),
     preview: bool = typer.Option(False, help="Also write composited previews under cache/build/backdrop/"),
 ) -> None:

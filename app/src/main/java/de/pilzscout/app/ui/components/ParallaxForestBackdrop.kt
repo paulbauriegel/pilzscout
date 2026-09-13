@@ -43,7 +43,7 @@ fun rememberForestLayers(dark: Boolean = isSystemInDarkTheme()): ForestLayers {
 fun ParallaxForestBackdrop(
     progress: () -> Float,
     modifier: Modifier = Modifier,
-    heightDp: Int = 170,
+    heightDp: Int = 200,
     layers: ForestLayers = rememberForestLayers(),
     factors: FloatArray = DefaultParallaxFactors,
 ) {
