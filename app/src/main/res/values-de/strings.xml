@@ -18,7 +18,6 @@
     <string name="settings_model_info">Modellinformationen</string>
     <string name="settings_about">Über die App und Lizenzen</string>
 
-    <string name="identify_title">Pilz bestimmen</string>
     <string name="browse_title">Entdecken</string>
     <string name="history_title">Verlauf</string>
     <string name="placeholder_coming_soon">Kommt im nächsten Build</string>
@@ -59,11 +58,9 @@
         <item quantity="one">%d Foto</item>
         <item quantity="other">%d Fotos</item>
     </plurals>
-    <string name="identify_new_observation">Neue Beobachtung</string>
     <string name="identify_take_photo">Foto aufnehmen</string>
     <string name="identify_import">Aus der Galerie</string>
-    <string name="identify_suggested_views">Empfohlene Ansichten</string>
-    <string name="identify_hint_flexible">Ein Foto genügt für den Anfang. Weitere Ansichten machen das Ergebnis verlässlicher.</string>
+    <string name="identify_hint_flexible">Ein Foto genügt für den Anfang</string>
     <string name="view_cap">Hut von oben</string>
     <string name="view_underside">Unterseite mit Lamellen oder Poren</string>
     <string name="view_stem_base">Ganzer Stiel und Basis</string>
@@ -72,19 +69,10 @@
     <string name="view_underside_short">Unterseite</string>
     <string name="view_stem_base_short">Stiel und Basis</string>
     <string name="view_habitat_short">Lebensraum</string>
-    <string name="identify_review">Deine Fotos</string>
     <string name="identify_retake">Neu aufnehmen</string>
-    <string name="identify_remove">Entfernen</string>
-    <string name="identify_move_left">Nach vorn</string>
-    <string name="identify_move_right">Nach hinten</string>
-    <string name="identify_add_view">Weitere Ansicht hinzufügen</string>
-    <string name="identify_change_view">Zuordnen</string>
-    <string name="identify_context_date">%1$s</string>
-    <string name="identify_location_pending">Ungefährer Standort…</string>
-    <string name="identify_location_unavailable">Kein Standort</string>
-    <string name="identify_location_add">Ungefähren Standort hinzufügen</string>
+    <string name="identify_location_add">Standort hinzufügen</string>
     <string name="identify_location_remove">Standort entfernen</string>
-    <string name="identify_action">Pilz bestimmen</string>
+    <string name="identify_action">Jetzt bestimmen</string>
     <string name="identify_model_missing">Der Klassifikator ist nicht installiert.</string>
     <string name="identify_model_failed">Der Klassifikator konnte nicht geladen werden: %1$s</string>
     <string name="camera_permission_needed">Für das Fotografieren des Pilzes wird der Kamerazugriff benötigt.</string>
@@ -96,8 +84,8 @@
 
     <string name="analysis_title">Beobachtung wird ausgewertet</string>
     <plurals name="analysis_combining">
-        <item quantity="one">Ein Foto, Datum und ungefährer Standort werden zu einem Ergebnis zusammengeführt.</item>
-        <item quantity="other">%d Fotos, Datum und ungefährer Standort werden zu einem Ergebnis zusammengeführt.</item>
+        <item quantity="one">Ein Foto, Datum und Standort werden zu einem Ergebnis zusammengeführt.</item>
+        <item quantity="other">%d Fotos, Datum und Standort werden zu einem Ergebnis zusammengeführt.</item>
     </plurals>
     <plurals name="analysis_combining_no_location">
         <item quantity="one">Ein Foto und das Datum werden zu einem Ergebnis zusammengeführt.</item>
@@ -229,6 +217,10 @@
     <string name="history_filter_month">Letzte 30 Tage</string>
     <string name="history_filter_confident">≥ 60 %% Konfidenz</string>
     <string name="history_filter_confirmed">Nur bestätigte</string>
+    <string name="history_filter_edible">Essbar (Referenz)</string>
+    <string name="history_view_list">Liste</string>
+    <string name="history_view_map">Karte</string>
+    <string name="history_map_no_location">Keine Beobachtungen mit Standort passen zum aktuellen Filter. Der Standort wird nur gespeichert, wenn er bei der Bestimmung aktiviert war.</string>
     <string name="history_offline_result">Offline-Ergebnis</string>
     <string name="history_online_result">Online-Ergebnis</string>
     <string name="history_confirmed">Von dir bestätigt</string>
@@ -274,11 +266,10 @@
     <string name="view_other">Beliebige Ansicht</string>
     <string name="view_other_short">Weitere</string>
     <string name="identify_header">Neuer Fund</string>
-    <string name="identify_header_sub">Füge bis zu 4 Fotos hinzu (optional)</string>
-    <string name="identify_slot_add">Foto hinzufügen</string>
-    <string name="identify_other_photos">Weitere Fotos</string>
+    <string name="identify_header_sub">Ein Foto genügt, mehr Ansichten helfen</string>
     <string name="identify_context_today">Heute</string>
-    <string name="identify_context_location_approx">ungefährer Standort</string>
+    <string name="identify_context_location_approx">Standort</string>
+    <string name="identify_context_location_photo">aus dem Foto</string>
     <string name="identify_context_no_location">kein Standort</string>
     <string name="result_likely_short">Wahrscheinlich %1$s</string>
     <string name="result_photos_combined">%1$d Fotos kombiniert</string>
@@ -296,14 +287,37 @@
     <string name="browse_header_sub">Arten, Beobachtungen und Artikel offline</string>
     <string name="browse_filter_germany">Deutschland</string>
     <string name="browse_tag_common">Häufig</string>
-    <string name="history_header_sub">Deine Bestimmungen, gespeichert auf diesem Gerät</string>
-    <string name="history_local_title">Nur auf diesem Gerät</string>
-    <string name="history_local_body">Deine Funde werden ausschließlich lokal gespeichert. Es findet keine Synchronisation statt und deine Daten verlassen dieses Gerät nicht.</string>
+    <string name="history_header_sub">Deine Bestimmungen</string>
     <string name="history_today">Heute</string>
     <string name="history_yesterday">Gestern</string>
     <string name="settings_dynamic_color">Systemfarben verwenden</string>
     <string name="settings_dynamic_color_summary">Android-Farbschema statt der Waldpalette</string>
     <string name="species_ft_photos">FungiTastic-Referenzfotos</string>
     <string name="species_ft_photos_note">Fotos aus FungiTastic-Beobachtungen, CC BY 4.0.</string>
-    <string name="location_near">bei %1$s (ca.)</string>
+    <!-- Guided capture (Neuer Fund) -->
+    <string name="identify_guidance_start_title">Fotografiere den Pilz</string>
+    <string name="identify_guidance_start_body">Ganzer Pilz von der Seite, scharf und nah.</string>
+    <string name="identify_guidance_second_title">Jetzt eine weitere Ansicht</string>
+    <string name="identify_guidance_second_body">Zum Beispiel die Unterseite mit Lamellen oder Poren.</string>
+    <string name="identify_guidance_third_title">Noch eine Ansicht?</string>
+    <string name="identify_guidance_third_body">Stielbasis oder Standort helfen bei der Unterscheidung.</string>
+    <string name="identify_guidance_covered_title">Gute Bildabdeckung</string>
+    <string name="identify_guidance_covered_body">Jetzt bestimmen oder weitere Fotos hinzufügen.</string>
+    <string name="identify_hint_one">Weitere Ansichten verbessern das Ergebnis</string>
+    <string name="identify_hint_two">Unterseite oder Stielbasis helfen bei der Unterscheidung</string>
+    <string name="identify_hint_covered">Gute Bildabdeckung</string>
+    <string name="identify_preview_open">Foto öffnen</string>
+    <string name="identify_preview_replace">Ersetzen</string>
+    <string name="identify_delete">Löschen</string>
+    <string name="identify_viewfinder_open">Kamera öffnen</string>
+    <string name="identify_take_more">Weitere Fotos hinzufügen</string>
+    <string name="identify_choose_view">Ansicht wählen</string>
+    <string name="identify_view_optional">Ansicht (optional)</string>
+    <string name="identify_photo_position">%1$d / %2$d</string>
+    <string name="view_cap_badge">Hut</string>
+    <string name="view_underside_badge">Unterseite</string>
+    <string name="view_stem_base_badge">Stiel</string>
+    <string name="view_habitat_badge">Umgebung</string>
+    <string name="camera_hint_retake">Foto neu aufnehmen</string>
+    <string name="location_near">bei %1$s</string>
 </resources>

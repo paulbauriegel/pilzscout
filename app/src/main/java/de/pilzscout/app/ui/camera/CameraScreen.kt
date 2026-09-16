@@ -41,6 +41,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
+import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
@@ -51,26 +52,36 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import de.pilzscout.app.R
+import de.pilzscout.app.ui.identify.ViewTypeChips
 import de.pilzscout.app.ui.identify.label
 import de.pilzscout.core.model.ViewType
 import java.io.File
 
 /**
- * Full-screen CameraX capture. [captureFile] is the target the caller allocated; on success [onCaptured]
- * receives it and the caller pops this destination.
+ * Full-screen CameraX capture. [hint] is the guidance shown while no view is chosen; the chips above the
+ * shutter let the user optionally say which view they are photographing ([initialView] preselects one).
+ * [captureFile] is the target the caller allocated; on success [onCaptured] receives it with the chosen
+ * view and the caller pops this destination.
  */
 @Composable
-fun CameraScreen(viewType: ViewType, captureFile: File, onCaptured: (File) -> Unit, onBack: () -> Unit) {
+fun CameraScreen(hint: String, initialView: ViewType?, captureFile: File, onCaptured: (File, ViewType?) -> Unit, onBack: () -> Unit) {
     val context = LocalContext.current
     var granted by remember {
         mutableStateOf(ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) == PackageManager.PERMISSION_GRANTED)
     }
     val permission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) { granted = it }
     LaunchedEffect(Unit) { if (!granted) permission.launch(Manifest.permission.CAMERA) }
+    var view by rememberSaveable { mutableStateOf(initialView) }
 
     Box(Modifier.fillMaxSize().background(Color.Black)) {
         if (granted) {
-            CameraContent(viewType, captureFile, onCaptured)
+            CameraContent(
+                hint = view?.let { stringResource(R.string.camera_hint_for_view, it.label()) } ?: hint,
+                view = view,
+                onViewChange = { view = it },
+                captureFile = captureFile,
+                onCaptured = { file -> onCaptured(file, view) },
+            )
         } else {
             Column(Modifier.fillMaxSize().padding(32.dp), verticalArrangement = Arrangement.Center, horizontalAlignment = Alignment.CenterHorizontally) {
                 Text(stringResource(R.string.camera_permission_needed), color = Color.White, style = MaterialTheme.typography.bodyLarge)
@@ -86,7 +97,7 @@ fun CameraScreen(viewType: ViewType, captureFile: File, onCaptured: (File) -> Un
 }
 
 @Composable
-private fun CameraContent(viewType: ViewType, captureFile: File, onCaptured: (File) -> Unit) {
+private fun CameraContent(hint: String, view: ViewType?, onViewChange: (ViewType?) -> Unit, captureFile: File, onCaptured: (File) -> Unit) {
     val context = LocalContext.current
     val lifecycleOwner = LocalLifecycleOwner.current
     var surfaceRequest by remember { mutableStateOf<SurfaceRequest?>(null) }
@@ -116,48 +127,51 @@ private fun CameraContent(viewType: ViewType, captureFile: File, onCaptured: (Fi
             horizontalAlignment = Alignment.CenterHorizontally,
         ) {
             Text(
-                stringResource(R.string.camera_hint_for_view, viewType.label()),
+                hint,
                 color = Color.White,
                 style = MaterialTheme.typography.titleMedium,
                 modifier = Modifier.background(Color.Black.copy(alpha = 0.45f), MaterialTheme.shapes.medium).padding(horizontal = 16.dp, vertical = 8.dp),
             )
             error?.let { Text(stringResource(R.string.camera_error, it), color = MaterialTheme.colorScheme.error, modifier = Modifier.padding(top = 8.dp)) }
         }
-        Row(
-            Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 32.dp).fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceEvenly,
-            verticalAlignment = Alignment.CenterVertically,
+        Column(
+            Modifier.align(Alignment.BottomCenter).navigationBarsPadding().padding(bottom = 28.dp).fillMaxWidth(),
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.spacedBy(20.dp),
         ) {
-            IconButton(onClick = { lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) CameraSelector.LENS_FACING_FRONT else CameraSelector.LENS_FACING_BACK }) {
-                Icon(Icons.Filled.Cameraswitch, contentDescription = stringResource(R.string.camera_flip), tint = Color.White)
-            }
-            FilledIconButton(
-                onClick = {
-                    if (capturing) return@FilledIconButton
-                    capturing = true
-                    val options = ImageCapture.OutputFileOptions.Builder(captureFile).build()
-                    imageCapture.takePicture(
-                        options,
-                        ContextCompat.getMainExecutor(context),
-                        object : ImageCapture.OnImageSavedCallback {
-                            override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
-                                capturing = false
-                                onCaptured(captureFile)
-                            }
+            ViewTypeChips(selected = view, onSelect = onViewChange, onDark = true, modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp))
+            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+                IconButton(onClick = { lensFacing = if (lensFacing == CameraSelector.LENS_FACING_BACK) CameraSelector.LENS_FACING_FRONT else CameraSelector.LENS_FACING_BACK }) {
+                    Icon(Icons.Filled.Cameraswitch, contentDescription = stringResource(R.string.camera_flip), tint = Color.White)
+                }
+                FilledIconButton(
+                    onClick = {
+                        if (capturing) return@FilledIconButton
+                        capturing = true
+                        val options = ImageCapture.OutputFileOptions.Builder(captureFile).build()
+                        imageCapture.takePicture(
+                            options,
+                            ContextCompat.getMainExecutor(context),
+                            object : ImageCapture.OnImageSavedCallback {
+                                override fun onImageSaved(outputFileResults: ImageCapture.OutputFileResults) {
+                                    capturing = false
+                                    onCaptured(captureFile)
+                                }
 
-                            override fun onError(exception: ImageCaptureException) {
-                                capturing = false
-                                error = exception.message ?: exception.toString()
-                            }
-                        },
-                    )
-                },
-                modifier = Modifier.size(84.dp),
-                shape = IconButtonDefaults.filledShape,
-            ) {
-                if (capturing) CircularProgressIndicator(modifier = Modifier.size(32.dp)) else Icon(Icons.Filled.PhotoCamera, contentDescription = stringResource(R.string.camera_capture), modifier = Modifier.size(36.dp))
+                                override fun onError(exception: ImageCaptureException) {
+                                    capturing = false
+                                    error = exception.message ?: exception.toString()
+                                }
+                            },
+                        )
+                    },
+                    modifier = Modifier.size(84.dp),
+                    shape = IconButtonDefaults.filledShape,
+                ) {
+                    if (capturing) CircularProgressIndicator(modifier = Modifier.size(32.dp)) else Icon(Icons.Filled.PhotoCamera, contentDescription = stringResource(R.string.camera_capture), modifier = Modifier.size(36.dp))
+                }
+                Box(Modifier.size(48.dp))
             }
-            Box(Modifier.size(48.dp))
         }
     }
 }

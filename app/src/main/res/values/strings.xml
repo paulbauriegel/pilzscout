@@ -21,7 +21,6 @@
     <string name="settings_about">About and licenses</string>
 
     <!-- Placeholders for phase 0 -->
-    <string name="identify_title">Identify a mushroom</string>
     <string name="browse_title">Browse</string>
     <string name="history_title">History</string>
     <string name="placeholder_coming_soon">Coming in the next build</string>
@@ -65,11 +64,9 @@
         <item quantity="other">%d photographs</item>
     </plurals>
     <!-- Identify -->
-    <string name="identify_new_observation">New observation</string>
     <string name="identify_take_photo">Take photo</string>
     <string name="identify_import">From gallery</string>
-    <string name="identify_suggested_views">Suggested views</string>
-    <string name="identify_hint_flexible">One photo is enough to start. More views make the result more reliable.</string>
+    <string name="identify_hint_flexible">One photo is enough to start</string>
     <string name="view_cap">Cap from above</string>
     <string name="view_underside">Underside with gills or pores</string>
     <string name="view_stem_base">Complete stem and base</string>
@@ -78,19 +75,10 @@
     <string name="view_underside_short">Underside</string>
     <string name="view_stem_base_short">Stem and base</string>
     <string name="view_habitat_short">Habitat</string>
-    <string name="identify_review">Your photos</string>
     <string name="identify_retake">Retake</string>
-    <string name="identify_remove">Remove</string>
-    <string name="identify_move_left">Move earlier</string>
-    <string name="identify_move_right">Move later</string>
-    <string name="identify_add_view">Add another view</string>
-    <string name="identify_change_view">Assign view</string>
-    <string name="identify_context_date">%1$s</string>
-    <string name="identify_location_pending">Approximate location…</string>
-    <string name="identify_location_unavailable">No location</string>
-    <string name="identify_location_add">Add approximate location</string>
+    <string name="identify_location_add">Add location</string>
     <string name="identify_location_remove">Remove location</string>
-    <string name="identify_action">Identify mushroom</string>
+    <string name="identify_action">Identify now</string>
     <string name="identify_model_missing">The classifier is not installed.</string>
     <string name="identify_model_failed">The classifier could not be loaded: %1$s</string>
     <string name="camera_permission_needed">Camera access is needed to photograph the mushroom.</string>
@@ -103,8 +91,8 @@
     <!-- Analysis -->
     <string name="analysis_title">Combining your observation</string>
     <plurals name="analysis_combining">
-        <item quantity="one">One photo, date and approximate location are being combined into one result.</item>
-        <item quantity="other">%d photos, date and approximate location are being combined into one result.</item>
+        <item quantity="one">One photo, date and location are being combined into one result.</item>
+        <item quantity="other">%d photos, date and location are being combined into one result.</item>
     </plurals>
     <plurals name="analysis_combining_no_location">
         <item quantity="one">One photo and the date are being combined into one result.</item>
@@ -240,6 +228,10 @@
     <string name="history_filter_month">Last 30 days</string>
     <string name="history_filter_confident">≥ 60 %% confidence</string>
     <string name="history_filter_confirmed">Confirmed only</string>
+    <string name="history_filter_edible">Edible (reference)</string>
+    <string name="history_view_list">List</string>
+    <string name="history_view_map">Map</string>
+    <string name="history_map_no_location">No observations with a location match the current filter. A location is only saved when it was enabled during identification.</string>
     <string name="history_offline_result">Offline result</string>
     <string name="history_online_result">Online result</string>
     <string name="history_confirmed">Confirmed by you</string>
@@ -287,11 +279,10 @@
     <string name="view_other">Any view</string>
     <string name="view_other_short">Other</string>
     <string name="identify_header">New find</string>
-    <string name="identify_header_sub">Add up to 4 photos (optional)</string>
-    <string name="identify_slot_add">Add photo</string>
-    <string name="identify_other_photos">More photos</string>
+    <string name="identify_header_sub">One photo is enough, more views help</string>
     <string name="identify_context_today">Today</string>
-    <string name="identify_context_location_approx">approximate location</string>
+    <string name="identify_context_location_approx">location</string>
+    <string name="identify_context_location_photo">from photo</string>
     <string name="identify_context_no_location">no location</string>
     <string name="result_likely_short">Likely %1$s</string>
     <string name="result_photos_combined">%1$d photos combined</string>
@@ -309,14 +300,37 @@
     <string name="browse_header_sub">Species, observations and articles offline</string>
     <string name="browse_filter_germany">Germany</string>
     <string name="browse_tag_common">Common</string>
-    <string name="history_header_sub">Your identifications, stored on this device</string>
-    <string name="history_local_title">Only on this device</string>
-    <string name="history_local_body">Your finds are stored locally only. Nothing is synchronised and your data never leaves this device.</string>
+    <string name="history_header_sub">Your identifications</string>
     <string name="history_today">Today</string>
     <string name="history_yesterday">Yesterday</string>
     <string name="settings_dynamic_color">Use system colours</string>
     <string name="settings_dynamic_color_summary">Android dynamic colour instead of the forest palette</string>
     <string name="species_ft_photos">FungiTastic reference photos</string>
     <string name="species_ft_photos_note">Photos from FungiTastic observations, CC BY 4.0.</string>
-    <string name="location_near">near %1$s (approx.)</string>
+    <!-- Guided capture (Neuer Fund) -->
+    <string name="identify_guidance_start_title">Photograph the mushroom</string>
+    <string name="identify_guidance_start_body">Whole mushroom from the side, sharp and close.</string>
+    <string name="identify_guidance_second_title">Now another view</string>
+    <string name="identify_guidance_second_body">For example the underside with gills or pores.</string>
+    <string name="identify_guidance_third_title">One more view?</string>
+    <string name="identify_guidance_third_body">Stem base or habitat help to tell species apart.</string>
+    <string name="identify_guidance_covered_title">Good coverage</string>
+    <string name="identify_guidance_covered_body">Identify now or add more photos.</string>
+    <string name="identify_hint_one">More views improve the result</string>
+    <string name="identify_hint_two">Underside or stem base help to tell species apart</string>
+    <string name="identify_hint_covered">Good coverage</string>
+    <string name="identify_preview_open">Open photo</string>
+    <string name="identify_preview_replace">Replace</string>
+    <string name="identify_delete">Delete</string>
+    <string name="identify_viewfinder_open">Open camera</string>
+    <string name="identify_take_more">Add more photos</string>
+    <string name="identify_choose_view">Choose view</string>
+    <string name="identify_view_optional">View (optional)</string>
+    <string name="identify_photo_position">%1$d / %2$d</string>
+    <string name="view_cap_badge">Cap</string>
+    <string name="view_underside_badge">Underside</string>
+    <string name="view_stem_base_badge">Stem</string>
+    <string name="view_habitat_badge">Habitat</string>
+    <string name="camera_hint_retake">Retake photo</string>
+    <string name="location_near">near %1$s</string>
 </resources>

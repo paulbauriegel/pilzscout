@@ -6,6 +6,9 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
+import androidx.compose.foundation.layout.asPaddingValues
+import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
@@ -26,6 +29,7 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
 import androidx.compose.ui.layout.ContentScale
@@ -49,19 +53,26 @@ fun TabScaffold(
     Column(modifier.fillMaxSize().statusBarsPadding()) {
         BrandRow(onOpenSettings)
         SectionHeader(title, subtitle, headerIcon, actions)
-        Box(Modifier.fillMaxSize()) { content(PaddingValues(bottom = 96.dp)) }
+        Box(Modifier.fillMaxSize()) { content(PaddingValues(bottom = floatingNavBarInset())) }
     }
 }
+
+/**
+ * Vertical space the floating tab bar covers at the bottom of a home page: the bar itself plus its
+ * margins and the system navigation inset it sits above. Pages keep their content clear of this.
+ */
+@Composable
+fun floatingNavBarInset(): Dp = 96.dp + WindowInsets.navigationBars.asPaddingValues().calculateBottomPadding()
 
 @Composable
 fun BrandRow(onOpenSettings: (() -> Unit)?, leading: @Composable (() -> Unit)? = null) {
     Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp), verticalAlignment = Alignment.CenterVertically) {
         leading?.invoke()
         Image(
-            painterResource(R.drawable.ic_launcher_foreground),
+            painterResource(R.drawable.brand_logo),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.size(34.dp).clip(MaterialTheme.shapes.extraLarge).background(MaterialTheme.colorScheme.primary),
+            modifier = Modifier.size(34.dp).clip(MaterialTheme.shapes.extraLarge),
         )
         Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 10.dp).weight(1f))
         if (onOpenSettings != null) {

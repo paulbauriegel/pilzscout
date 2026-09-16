@@ -10,7 +10,12 @@ sealed interface AppKey : NavKey
 @Serializable data object HomeKey : AppKey
 
 @Serializable data object SettingsKey : AppKey
-@Serializable data class CameraKey(val viewType: ViewType, val replacePhotoId: String? = null) : AppKey
+
+/**
+ * Full-screen camera. [replacePhotoId] retakes an existing draft photo in place; [recommendedView]
+ * preselects that view in the camera (the result screen asks for a specific view); the user can still change it.
+ */
+@Serializable data class CameraKey(val replacePhotoId: String? = null, val recommendedView: ViewType? = null) : AppKey
 @Serializable data object AnalysisKey : AppKey
 @Serializable data class ResultKey(val observationId: String) : AppKey
 @Serializable data class ComparisonKey(val observationId: String, val alternativeSpeciesId: String) : AppKey

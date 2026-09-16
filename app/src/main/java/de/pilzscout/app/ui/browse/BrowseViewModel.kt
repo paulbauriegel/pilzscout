@@ -16,6 +16,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
+/** Which section the species detail page shows first; the toggle lives on that page. */
 enum class BrowseSource { FUNGITASTIC, WIKIPEDIA }
 enum class BrowseTab { SPECIES, GROUPS }
 
@@ -30,7 +31,6 @@ data class GroupsState(
 data class BrowseUiState(
     val dbAvailable: Boolean = false,
     val query: String = "",
-    val source: BrowseSource = BrowseSource.FUNGITASTIC,
     val tab: BrowseTab = BrowseTab.SPECIES,
     val results: List<SpeciesSummary> = emptyList(),
     val total: Int = 0,
@@ -46,24 +46,19 @@ class BrowseViewModel @Inject constructor(
     private val query = MutableStateFlow("")
     /** Undebounced text for the search field; the debounced [query] drives the actual search. */
     val queryText: StateFlow<String> = query
-    private val source = MutableStateFlow(BrowseSource.FUNGITASTIC)
     private val tab = MutableStateFlow(BrowseTab.SPECIES)
 
-    val state: StateFlow<BrowseUiState> = combine(species.database, query.debounce(150), source, tab) { db, q, src, t ->
-        if (db == null) return@combine BrowseUiState(dbAvailable = false, query = q, source = src, tab = t)
+    val state: StateFlow<BrowseUiState> = combine(species.database, query.debounce(150), tab) { db, q, t ->
+        if (db == null) return@combine BrowseUiState(dbAvailable = false, query = q, tab = t)
         val (total, de) = species.counts()
-        val results = species.search(q, limit = 100).let { list ->
-            if (src == BrowseSource.WIKIPEDIA) list // all species stay browsable; the detail page says when no article exists
-            else list
-        }
-        BrowseUiState(dbAvailable = true, query = q, source = src, tab = t, results = results, total = total, inGermany = de)
+        val results = species.search(q, limit = 100)
+        BrowseUiState(dbAvailable = true, query = q, tab = t, results = results, total = total, inGermany = de)
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), BrowseUiState())
 
     private val _groups = MutableStateFlow(GroupsState())
     val groups: StateFlow<GroupsState> = _groups
 
     fun setQuery(q: String) { query.value = q }
-    fun setSource(s: BrowseSource) { source.value = s }
     fun setTab(t: BrowseTab) {
         tab.value = t
         if (t == BrowseTab.GROUPS && _groups.value.families.isEmpty()) loadFamilies()

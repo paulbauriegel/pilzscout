@@ -23,14 +23,12 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.SegmentedButton
-import androidx.compose.material3.SegmentedButtonDefaults
-import androidx.compose.material3.SingleChoiceSegmentedButtonRow
-import androidx.compose.material3.Tab
-import androidx.compose.material3.TabRow
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.setValue
+import androidx.compose.runtime.saveable.rememberSaveable
+import androidx.compose.runtime.mutableStateOf
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -53,12 +51,14 @@ import de.pilzscout.core.model.Edibility
 @Composable
 fun BrowseScreen(
     onOpenSettings: () -> Unit,
-    onOpenSpecies: (String, BrowseSource) -> Unit = { _, _ -> },
+    onOpenSpecies: (String) -> Unit = {},
     viewModel: BrowseViewModel = hiltViewModel(),
 ) {
     val state by viewModel.state.collectAsStateWithLifecycle()
     val groups by viewModel.groups.collectAsStateWithLifecycle()
-    val queryText by viewModel.queryText.collectAsStateWithLifecycle()
+    // The field owns its text; a value that comes back through the view model's flow lags a frame
+    // behind each keystroke and resets the cursor while typing.
+    var queryText by rememberSaveable { mutableStateOf(viewModel.queryText.value) }
 
     TabScaffold(
         title = stringResource(R.string.browse_title),
@@ -69,52 +69,33 @@ fun BrowseScreen(
         Column(Modifier.fillMaxSize()) {
             OutlinedTextField(
                 value = queryText,
-                onValueChange = viewModel::setQuery,
+                onValueChange = { queryText = it; viewModel.setQuery(it) },
                 modifier = Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 6.dp),
                 placeholder = { Text(stringResource(R.string.browse_search_hint)) },
                 leadingIcon = { Icon(Icons.Outlined.Search, contentDescription = null) },
                 singleLine = true,
                 shape = MaterialTheme.shapes.extraLarge,
             )
-            SingleChoiceSegmentedButtonRow(Modifier.fillMaxWidth().padding(horizontal = 16.dp)) {
-                BrowseSource.entries.forEachIndexed { i, src ->
-                    SegmentedButton(
-                        selected = state.source == src,
-                        onClick = { viewModel.setSource(src) },
-                        shape = SegmentedButtonDefaults.itemShape(i, BrowseSource.entries.size),
-                        colors = SegmentedButtonDefaults.colors(activeContainerColor = MaterialTheme.colorScheme.primary, activeContentColor = MaterialTheme.colorScheme.onPrimary),
-                    ) { Text(if (src == BrowseSource.FUNGITASTIC) "FungiTastic" else "Wikipedia") }
-                }
-            }
             if (!state.dbAvailable) {
                 Box(Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
                     Text(stringResource(R.string.browse_db_missing), style = MaterialTheme.typography.bodyLarge, modifier = Modifier.padding(24.dp))
                 }
                 return@Column
             }
-            if (state.source == BrowseSource.FUNGITASTIC) {
-                TabRow(selectedTabIndex = state.tab.ordinal, modifier = Modifier.padding(top = 4.dp), containerColor = MaterialTheme.colorScheme.background) {
-                    BrowseTab.entries.forEach { t ->
-                        Tab(
-                            selected = state.tab == t,
-                            onClick = { viewModel.setTab(t) },
-                            text = { Text(stringResource(when (t) { BrowseTab.SPECIES -> R.string.browse_tab_species; BrowseTab.GROUPS -> R.string.browse_tab_groups })) },
-                        )
-                    }
-                }
-            }
-            val tab = if (state.source == BrowseSource.WIKIPEDIA) BrowseTab.SPECIES else state.tab
+            // Groups tab (families › genera) is hidden for now; GroupsList and the ViewModel
+            // state are kept so it can be re-enabled later.
+            val tab = BrowseTab.SPECIES
             val bottom = padding.calculateBottomPadding()
             when (tab) {
                 BrowseTab.SPECIES -> SpeciesList(state, bottom, onOpenSpecies)
-                BrowseTab.GROUPS -> GroupsList(groups, bottom, viewModel::selectFamily, viewModel::selectGenus) { onOpenSpecies(it, state.source) }
+                BrowseTab.GROUPS -> GroupsList(groups, bottom, viewModel::selectFamily, viewModel::selectGenus) onOpenSpecies
             }
         }
     }
 }
 
 @Composable
-private fun SpeciesList(state: BrowseUiState, bottom: androidx.compose.ui.unit.Dp, onOpenSpecies: (String, BrowseSource) -> Unit) {
+private fun SpeciesList(state: BrowseUiState, bottom: androidx.compose.ui.unit.Dp, onOpenSpecies: (String) -> Unit) {
     Column(Modifier.fillMaxSize()) {
         Text(
             stringResource(R.string.browse_species_counts, state.inGermany, state.total),
@@ -123,7 +104,7 @@ private fun SpeciesList(state: BrowseUiState, bottom: androidx.compose.ui.unit.D
             modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),
         )
         LazyColumn(Modifier.fillMaxSize(), contentPadding = PaddingValues(start = 16.dp, end = 16.dp, bottom = bottom), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-            items(state.results, key = { it.id }) { s -> SpeciesRow(s, onClick = { onOpenSpecies(s.id, state.source) }) }
+            items(state.results, key = { it.id }) { s -> SpeciesRow(s, onClick = { onOpenSpecies(s.id) }) }
         }
     }
 }

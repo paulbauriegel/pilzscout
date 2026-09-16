@@ -6,8 +6,9 @@ import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import de.pilzscout.app.identify.Draft
 import de.pilzscout.app.identify.DraftRepository
-import de.pilzscout.app.identify.PhotoStore
-import de.pilzscout.app.location.CoarseLocationProvider
+import de.pilzscout.app.identify.PhotoIntake
+import de.pilzscout.app.location.DeviceLocationProvider
+import de.pilzscout.app.location.PlaceResolver
 import de.pilzscout.app.ml.ClassifierProvider
 import de.pilzscout.app.ml.ClassifierState
 import de.pilzscout.core.model.ViewType
@@ -18,16 +19,17 @@ import javax.inject.Inject
 @HiltViewModel
 class IdentifyViewModel @Inject constructor(
     private val drafts: DraftRepository,
-    private val photoStore: PhotoStore,
-    private val location: CoarseLocationProvider,
-    private val places: de.pilzscout.app.location.PlaceResolver,
+    private val intake: PhotoIntake,
+    private val location: DeviceLocationProvider,
+    private val places: PlaceResolver,
     classifierProvider: ClassifierProvider,
 ) : ViewModel() {
 
     val draft: StateFlow<Draft> = drafts.draft
     val classifierState: StateFlow<ClassifierState> = classifierProvider.state
 
-    fun hasLocationPermission() = location.hasPermission()
+    /** Precise location granted; otherwise the screen asks again so finds get exact coordinates. */
+    fun hasPreciseLocationPermission() = location.hasFinePermission()
 
     fun fetchLocation() {
         viewModelScope.launch {
@@ -44,17 +46,15 @@ class IdentifyViewModel @Inject constructor(
     }
 
     fun importFromGallery(uris: List<Uri>) {
-        viewModelScope.launch {
-            for (uri in uris) {
-                val file = runCatching { photoStore.importFromUri(uri) }.getOrNull() ?: continue
-                drafts.add(file, ViewType.OTHER)
-            }
-        }
+        viewModelScope.launch { intake.importFromGallery(uris) }
+    }
+
+    fun replaceFromGallery(photoId: String, uri: Uri) {
+        viewModelScope.launch { intake.replaceFromGallery(photoId, uri) }
     }
 
     fun remove(photoId: String) = drafts.remove(photoId)
-    fun move(photoId: String, delta: Int) = drafts.move(photoId, delta)
-    fun setViewType(photoId: String, viewType: ViewType) = drafts.setViewType(photoId, viewType)
+    fun setViewType(photoId: String, view: ViewType) = drafts.setViewType(photoId, view)
     fun setLanguage(language: String) = drafts.setLanguage(language)
     fun clear() = drafts.clear()
 }

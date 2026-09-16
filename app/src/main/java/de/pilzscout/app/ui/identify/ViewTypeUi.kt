@@ -30,6 +30,18 @@ fun ViewType.shortLabel(): String = stringResource(
     },
 )
 
+/** One-word label for badges on photos. */
+@Composable
+fun ViewType.badgeLabel(): String = stringResource(
+    when (this) {
+        ViewType.CAP -> R.string.view_cap_badge
+        ViewType.UNDERSIDE -> R.string.view_underside_badge
+        ViewType.STEM_BASE -> R.string.view_stem_base_badge
+        ViewType.HABITAT -> R.string.view_habitat_badge
+        ViewType.OTHER -> R.string.identify_choose_view
+    },
+)
+
 /** Each suggested view gets its own expressive shape so the four slots are recognisable at a glance. */
 @Composable
 fun ViewType.slotShape(): Shape = when (this) {

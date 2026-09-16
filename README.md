@@ -4,7 +4,7 @@ Offline-first, bilingual (DE/EN) mushroom identification and classifier-evaluati
 Android, Jetpack Compose with Material 3 Expressive, Navigation 3, Room, CameraX and LiteRT.
 
 The app combines one to four photographs (cap, underside, stem and base, habitat) plus date and
-approximate location into one result, explains it with an offline similar-species comparison, lets you
+location into one result, explains it with an offline similar-species comparison, lets you
 browse FungiTastic observations and Wikipedia extracts without a network, and keeps every
 identification in a local history with ZIP export.
 

@@ -16,6 +16,10 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.pager.HorizontalPager
+import androidx.compose.foundation.pager.PagerDefaults
+import androidx.compose.foundation.pager.PagerSnapDistance
+import androidx.compose.foundation.pager.rememberPagerState
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
@@ -50,6 +54,7 @@ import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.stringResource
@@ -60,6 +65,7 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import coil3.compose.AsyncImage
 import de.pilzscout.app.R
+import de.pilzscout.app.data.history.PhotoEntity
 import de.pilzscout.app.data.species.SpeciesEntity
 import de.pilzscout.app.ui.components.BrandRow
 import de.pilzscout.app.ui.components.SectionHeader
@@ -105,14 +111,11 @@ fun ResultScreen(
         }
         val primary = fusion.primary
         val primarySpecies = primary.speciesId?.let { state.species[it] }
-        val lead = obs.photos.minByOrNull { it.position }
 
         Column(Modifier.fillMaxSize().verticalScroll(rememberScrollState()).padding(horizontal = 16.dp), verticalArrangement = Arrangement.spacedBy(14.dp)) {
-            // Hero: the lead photo, then the verdict block
+            // Hero: all photos, swipeable, then the verdict block
             Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(22.dp)).background(MaterialTheme.colorScheme.surfaceContainerLow)) {
-                if (lead != null) {
-                    AsyncImage(model = File(lead.filePath), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxWidth().aspectRatio(1.6f))
-                }
+                if (obs.photos.isNotEmpty()) PhotoPager(obs.photos.sortedBy { it.position })
                 Column(Modifier.padding(16.dp).clickable { primary.speciesId?.let(onOpenSpecies) }, verticalArrangement = Arrangement.spacedBy(4.dp)) {
                     Text(stringResource(R.string.result_likely_short, primarySpecies.displayName()), style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
                     Text(primarySpecies?.binomial ?: "", style = MaterialTheme.typography.bodyLarge, fontStyle = FontStyle.Italic, color = MaterialTheme.colorScheme.onSurfaceVariant)
@@ -204,6 +207,39 @@ fun ResultScreen(
                     InfoRow(stringResource(R.string.model_info_duration), stringResource(R.string.model_info_total, obs.observation.totalInferenceMs))
                     fusion.photos.forEach { p -> Text(stringResource(R.string.model_info_per_photo, p.viewType.shortLabel(), p.inferenceMs), style = MaterialTheme.typography.bodyMedium) }
                     Spacer(Modifier.height(24.dp))
+                }
+            }
+        }
+    }
+}
+
+/** All photos of the observation, swipeable; each page is labelled with its view and the dots show the position. */
+@Composable
+private fun PhotoPager(photos: List<PhotoEntity>) {
+    val pagerState = rememberPagerState(pageCount = { photos.size })
+    Box(Modifier.fillMaxWidth().aspectRatio(1.6f)) {
+        HorizontalPager(
+            state = pagerState,
+            modifier = Modifier.fillMaxSize(),
+            key = { photos[it].id },
+            flingBehavior = PagerDefaults.flingBehavior(state = pagerState, pagerSnapDistance = PagerSnapDistance.atMost(1)),
+        ) { page ->
+            AsyncImage(model = File(photos[page].filePath), contentDescription = null, contentScale = ContentScale.Crop, modifier = Modifier.fillMaxSize())
+        }
+        val viewType = runCatching { ViewType.valueOf(photos[pagerState.currentPage].viewType) }.getOrNull()
+        if (viewType != null) {
+            Text(
+                viewType.label(),
+                style = MaterialTheme.typography.labelMedium,
+                color = Color.White,
+                modifier = Modifier.align(Alignment.TopStart).padding(12.dp).clip(MaterialTheme.shapes.small).background(Color.Black.copy(alpha = 0.45f)).padding(horizontal = 8.dp, vertical = 4.dp),
+            )
+        }
+        if (photos.size > 1) {
+            Row(Modifier.align(Alignment.BottomCenter).padding(10.dp), horizontalArrangement = Arrangement.spacedBy(6.dp)) {
+                repeat(photos.size) { i ->
+                    val active = i == pagerState.currentPage
+                    Box(Modifier.size(if (active) 8.dp else 6.dp).clip(RoundedCornerShape(50)).background(if (active) Color.White else Color.White.copy(alpha = 0.5f)))
                 }
             }
         }

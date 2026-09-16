@@ -10,10 +10,14 @@ import de.pilzscout.app.data.species.SpeciesEntity
 import de.pilzscout.app.data.species.SpeciesRepository
 import de.pilzscout.app.data.species.SpeciesSummary
 import de.pilzscout.app.export.ObservationExporter
+import de.pilzscout.core.model.Edibility
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.combine
+import kotlinx.coroutines.flow.filterNotNull
+import kotlinx.coroutines.flow.first
+import de.pilzscout.app.location.PlaceResolver
 import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -24,14 +28,38 @@ data class HistoryFilter(
     val fromEpochMs: Long? = null,
     val toEpochMs: Long? = null,
     val onlyConfirmed: Boolean = false,
-)
+    /** Only species whose reference edibility is EDIBLE or CHOICE (never a statement about the photographed mushroom). */
+    val onlyEdible: Boolean = false,
+) {
+    /** Pure predicate shared by list and map; [normalizedQuery] is [query] passed through [SpeciesRepository.normalize]. */
+    fun matches(item: HistoryItem, normalizedQuery: String = SpeciesRepository.normalize(query)): Boolean {
+        val o = item.entry.observation
+        val shown = item.shown
+        val nameHit = normalizedQuery.isBlank() || listOfNotNull(shown?.binomial, shown?.commonDe, shown?.commonEn, item.primary?.binomial)
+            .any { SpeciesRepository.normalize(it).contains(normalizedQuery) }
+        val e = item.edibility
+        return nameHit && o.primaryProb >= minConfidence &&
+            (fromEpochMs == null || o.capturedAt >= fromEpochMs) &&
+            (toEpochMs == null || o.capturedAt <= toEpochMs) &&
+            (!onlyConfirmed || o.userConfirmed) &&
+            (!onlyEdible || e == Edibility.EDIBLE || e == Edibility.CHOICE)
+    }
+}
 
-data class HistoryItem(val entry: ObservationWithPhotos, val primary: SpeciesEntity?, val corrected: SpeciesEntity?)
+enum class HistoryView { LIST, MAP }
+
+data class HistoryItem(val entry: ObservationWithPhotos, val primary: SpeciesEntity?, val corrected: SpeciesEntity?) {
+    /** The species the user sees: their correction if any, otherwise the model's primary candidate. */
+    val shown: SpeciesEntity? get() = corrected ?: primary
+    val edibility: Edibility? get() = Edibility.parse(shown?.edibility)
+    val located: Boolean get() = entry.observation.let { it.locationIncluded && it.lat != null && it.lon != null }
+}
 
 data class HistoryUiState(
     val items: List<HistoryItem> = emptyList(),
     val total: Int = 0,
     val filter: HistoryFilter = HistoryFilter(),
+    val view: HistoryView = HistoryView.LIST,
     val selected: Set<String> = emptySet(),
     val exporting: Boolean = false,
     val message: String? = null,
@@ -44,7 +72,19 @@ class HistoryViewModel @Inject constructor(
     private val history: HistoryRepository,
     private val species: SpeciesRepository,
     private val exporter: ObservationExporter,
+    private val places: PlaceResolver,
 ) : ViewModel() {
+
+    init {
+        // Older finds were saved before offline place names existed; resolve them once so the list shows "near X".
+        viewModelScope.launch {
+            species.database.filterNotNull().first()
+            history.observeAll().first()
+                .map { it.observation }
+                .filter { it.locationIncluded && it.placeName == null && it.lat != null && it.lon != null }
+                .forEach { o -> places.nearest(o.lat!!, o.lon!!)?.let { history.update(o.copy(placeName = it.name)) } }
+        }
+    }
 
     private val filter = MutableStateFlow(HistoryFilter())
     private val selected = MutableStateFlow<Set<String>>(emptySet())
@@ -55,16 +95,7 @@ class HistoryViewModel @Inject constructor(
         val map = if (db != null) species.byIds(ids) else emptyMap()
         val q = SpeciesRepository.normalize(f.query)
         val items = all.map { HistoryItem(it, map[it.observation.primarySpeciesId], it.observation.correctedSpeciesId?.let { c -> map[c] }) }
-            .filter { item ->
-                val o = item.entry.observation
-                val shown = item.corrected ?: item.primary
-                val nameHit = q.isBlank() || listOfNotNull(shown?.binomial, shown?.commonDe, shown?.commonEn, item.primary?.binomial)
-                    .any { SpeciesRepository.normalize(it).contains(q) }
-                nameHit && o.primaryProb >= f.minConfidence &&
-                    (f.fromEpochMs == null || o.capturedAt >= f.fromEpochMs) &&
-                    (f.toEpochMs == null || o.capturedAt <= f.toEpochMs) &&
-                    (!f.onlyConfirmed || o.userConfirmed)
-            }
+            .filter { f.matches(it, q) }
         t.copy(items = items, total = all.size, filter = f, selected = sel intersect all.map { it.observation.id }.toSet())
     }.stateIn(viewModelScope, SharingStarted.WhileSubscribed(5_000), HistoryUiState())
 
@@ -72,6 +103,8 @@ class HistoryViewModel @Inject constructor(
     fun setMinConfidence(v: Float) = filter.value.let { filter.value = it.copy(minConfidence = v) }
     fun setDateRange(from: Long?, to: Long?) = filter.value.let { filter.value = it.copy(fromEpochMs = from, toEpochMs = to) }
     fun setOnlyConfirmed(v: Boolean) = filter.value.let { filter.value = it.copy(onlyConfirmed = v) }
+    fun setOnlyEdible(v: Boolean) = filter.value.let { filter.value = it.copy(onlyEdible = v) }
+    fun setView(v: HistoryView) { transient.value = transient.value.copy(view = v) }
 
     fun toggleSelect(id: String) = selected.value.let { selected.value = if (id in it) it - id else it + id }
     fun clearSelection() { selected.value = emptySet() }

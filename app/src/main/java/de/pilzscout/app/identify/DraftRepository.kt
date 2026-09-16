@@ -1,6 +1,6 @@
 package de.pilzscout.app.identify
 
-import de.pilzscout.app.location.ApproxLocation
+import de.pilzscout.app.location.GeoPoint
 import de.pilzscout.core.model.ViewType
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
@@ -10,12 +10,12 @@ import java.util.UUID
 import javax.inject.Inject
 import javax.inject.Singleton
 
-data class DraftPhoto(val id: String = UUID.randomUUID().toString(), val file: File, val viewType: ViewType)
+data class DraftPhoto(val id: String = UUID.randomUUID().toString(), val file: File, val viewType: ViewType = ViewType.OTHER)
 
 data class Draft(
     val photos: List<DraftPhoto> = emptyList(),
     val capturedAt: Long = System.currentTimeMillis(),
-    val location: ApproxLocation? = null,
+    val location: GeoPoint? = null,
     val placeName: String? = null,
     val includeLocation: Boolean = true,
     val locationRequested: Boolean = false,
@@ -23,8 +23,6 @@ data class Draft(
     val language: String = "en",
 ) {
     val capturedViews: Set<ViewType> get() = photos.map { it.viewType }.toSet()
-    fun nextSuggestedView(): ViewType? = ViewType.suggestedViews.firstOrNull { it !in capturedViews }
-    val unassigned: List<DraftPhoto> get() = photos.filter { it.viewType == ViewType.OTHER }
 }
 
 /** The observation currently being composed on the Identify screen (in memory; photos are cache files). */
@@ -33,11 +31,20 @@ class DraftRepository @Inject constructor() {
     private val _draft = MutableStateFlow(Draft())
     val draft: StateFlow<Draft> = _draft
 
-    fun add(file: File, viewType: ViewType) = _draft.update { d ->
-        val photos = d.photos.toMutableList()
-        val existing = photos.indexOfFirst { it.viewType == viewType && it.file == file }
-        if (existing < 0) photos += DraftPhoto(file = file, viewType = viewType)
-        d.copy(photos = photos, capturedAt = if (d.photos.isEmpty()) System.currentTimeMillis() else d.capturedAt)
+    /** Appends [file] (untyped unless a detector tags it later) and returns the photo's id; a file already in the draft is not added twice. */
+    fun add(file: File, viewType: ViewType = ViewType.OTHER): String {
+        var id = ""
+        _draft.update { d ->
+            val existing = d.photos.firstOrNull { it.file == file }
+            if (existing != null) {
+                id = existing.id
+                return@update d
+            }
+            val photo = DraftPhoto(file = file, viewType = viewType)
+            id = photo.id
+            d.copy(photos = d.photos + photo, capturedAt = if (d.photos.isEmpty()) System.currentTimeMillis() else d.capturedAt)
+        }
+        return id
     }
 
     fun replace(photoId: String, file: File) = _draft.update { d ->
@@ -46,23 +53,13 @@ class DraftRepository @Inject constructor() {
 
     fun remove(photoId: String) = _draft.update { d -> d.copy(photos = d.photos.filterNot { it.id == photoId }) }
 
-    fun move(photoId: String, delta: Int) = _draft.update { d ->
-        val list = d.photos.toMutableList()
-        val i = list.indexOfFirst { it.id == photoId }
-        val j = (i + delta).coerceIn(0, list.lastIndex)
-        if (i < 0 || i == j) return@update d
-        val item = list.removeAt(i)
-        list.add(j, item)
-        d.copy(photos = list)
-    }
-
     fun setViewType(photoId: String, viewType: ViewType) = _draft.update { d ->
         d.copy(photos = d.photos.map { if (it.id == photoId) it.copy(viewType = viewType) else it })
     }
 
     fun setLanguage(language: String) = _draft.update { it.copy(language = language) }
 
-    fun setLocation(location: ApproxLocation?, placeName: String? = null) = _draft.update { it.copy(location = location, placeName = placeName, locationRequested = true) }
+    fun setLocation(location: GeoPoint?, placeName: String? = null) = _draft.update { it.copy(location = location, placeName = placeName, locationRequested = true) }
     fun setIncludeLocation(include: Boolean) = _draft.update { it.copy(includeLocation = include) }
 
     fun clear() {

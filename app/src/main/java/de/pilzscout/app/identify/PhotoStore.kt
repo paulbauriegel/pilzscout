@@ -28,13 +28,20 @@ class PhotoStore @Inject constructor(@ApplicationContext private val context: Co
         return File(dir, "capture-${UUID.randomUUID()}.jpg")
     }
 
-    /** Copies a gallery Uri into the camera cache so it is handled exactly like a capture. */
-    suspend fun importFromUri(uri: Uri): File = withContext(Dispatchers.IO) {
+    /**
+     * Copies a gallery Uri into the camera cache so it is handled exactly like a capture. [original] is tried
+     * first (a MediaStore "require original" Uri that keeps GPS tags); if the provider rejects it the plain
+     * [uri] is copied instead so the import itself never fails because of metadata.
+     */
+    suspend fun importFromUri(uri: Uri, original: Uri = uri): File = withContext(Dispatchers.IO) {
         val target = newCaptureFile()
-        context.contentResolver.openInputStream(uri)?.use { input -> target.outputStream().use { input.copyTo(it) } }
-            ?: error("Could not open $uri")
+        val copied = runCatching { copy(original, target) }.getOrDefault(false) || (original != uri && copy(uri, target))
+        if (!copied) error("Could not open $uri")
         target
     }
+
+    private fun copy(source: Uri, target: File): Boolean =
+        context.contentResolver.openInputStream(source)?.use { input -> target.outputStream().use { input.copyTo(it) }; true } ?: false
 
     /**
      * Moves a draft photo into the observation folder as <position>-<view>.jpg (re-encoded, longest edge
