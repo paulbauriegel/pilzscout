@@ -1,5 +1,7 @@
 # PilzScout
 
+[![Android](https://github.com/paulbauriegel/pilzscout/actions/workflows/android.yml/badge.svg)](https://github.com/paulbauriegel/pilzscout/actions/workflows/android.yml)
+
 Offline-first, bilingual (DE/EN) mushroom identification and classifier-evaluation app for Germany.
 Android, Jetpack Compose with Material 3 Expressive, Navigation 3, Room, CameraX and LiteRT.
 
@@ -175,6 +177,32 @@ The app checks the catalog for a newer pack at most once a day, or when the user
 updates* under Settings → Offline data. Updates are offered, never forced. The repo defaults to
 `paulbauriegel/pilzscout-pack-de`; override it with `-Ppilzscout.packRepo=owner/name`, or set a full base URL
 with `-Ppilzscout.packBaseUrl=…`.
+
+## Continuous integration
+
+`.github/workflows/android.yml` runs on every push, every pull request and by hand. It:
+
+- runs the pack tool tests (`pytest`), `:core:test` and the app unit tests;
+- builds the `play` flavour: a debug APK and a release APK, plus an AAB when signing secrets are
+  set;
+- uploads them as the `pilzscout-apk-<run>` artifact, kept for 30 days.
+
+Pushing a `v*` tag (e.g. `git tag v0.2.0 && git push origin v0.2.0`) also creates a GitHub
+release with the APKs attached. The release takes its `versionName` from the tag.
+
+Notes:
+
+- CI sets `versionCode` to the workflow run number, so later CI builds can update earlier ones.
+  Local builds keep `versionCode` 1.
+- Only the `play` flavour is built, because the `bundled` pack needs the training data. Its APK
+  downloads the pack from Hugging Face on first launch, which works only once the dataset repo
+  is public.
+- The CI debug APK is signed with a throwaway key, so it cannot update a locally built debug
+  install, and vice versa. Android refuses the update; never uninstall to get around that on the
+  Pixel.
+- Signed release builds come from the repository secrets `ANDROID_KEYSTORE_BASE64` (output of
+  `base64 -i upload.jks`), `ANDROID_KEYSTORE_PASSWORD`, `ANDROID_KEY_ALIAS` and
+  `ANDROID_KEY_PASSWORD`. Without them the release APK is unsigned.
 
 ## Publishing to Google Play
 

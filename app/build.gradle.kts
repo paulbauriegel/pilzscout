@@ -25,8 +25,9 @@ android {
         applicationId = "de.pilzscout.app"
         minSdk = 26
         targetSdk = 36
-        versionCode = 1
-        versionName = "0.1.0"
+        // CI passes -Ppilzscout.versionCode=<run number> (and versionName from a v* tag) so successive builds can update each other.
+        versionCode = providers.gradleProperty("pilzscout.versionCode").map(String::toInt).getOrElse(1)
+        versionName = providers.gradleProperty("pilzscout.versionName").getOrElse("0.1.0")
         testInstrumentationRunner = "de.pilzscout.app.HiltTestRunner"
         // Only 64-bit ARM devices are targeted for now; drops ~50 MB of LiteRT libraries for other ABIs.
         ndk { abiFilters += listOf("arm64-v8a") }

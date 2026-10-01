@@ -1,0 +1,122 @@
+name: Android
+
+# Builds the `play` flavour (the APK downloads its offline pack from Hugging Face at first launch).
+# The `bundled` flavour needs the pack built from the training data by tools/, which CI does not have.
+on:
+  push:
+    branches: ["**"]
+    tags: ["v*"]
+  pull_request:
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  pack-tools:
+    name: Pack tools (pytest)
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: astral-sh/setup-uv@v6
+        with:
+          working-directory: tools
+      - name: Test
+        working-directory: tools
+        run: |
+          uv sync --extra dev --locked
+          uv run pytest -q
+
+  apk:
+    name: Build APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    env:
+      VERSION_ARGS: -Ppilzscout.versionCode=${{ github.run_number }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+
+      - uses: android-actions/setup-android@v3
+
+      - uses: gradle/actions/setup-gradle@v4
+
+      - name: Version name from tag
+        if: startsWith(github.ref, 'refs/tags/v')
+        run: echo "VERSION_ARGS=$VERSION_ARGS -Ppilzscout.versionName=${GITHUB_REF_NAME#v}" >> "$GITHUB_ENV"
+
+      # Optional release signing. Set these repository secrets to get a signed release APK and AAB:
+      # ANDROID_KEYSTORE_BASE64 (base64 of the .jks), ANDROID_KEYSTORE_PASSWORD, ANDROID_KEY_ALIAS, ANDROID_KEY_PASSWORD.
+      - name: Release keystore
+        env:
+          KEYSTORE_BASE64: ${{ secrets.ANDROID_KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.ANDROID_KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.ANDROID_KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.ANDROID_KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            echo "$KEYSTORE_BASE64" | base64 --decode > release.jks
+            printf 'storeFile=release.jks\nstorePassword=%s\nkeyAlias=%s\nkeyPassword=%s\n' \
+              "$KEYSTORE_PASSWORD" "$KEY_ALIAS" "$KEY_PASSWORD" > keystore.properties
+            echo "SIGNED=true" >> "$GITHUB_ENV"
+          else
+            echo "No signing secrets: the release APK stays unsigned; the debug APK is installable."
+          fi
+
+      - name: Unit tests
+        run: ./gradlew --no-configuration-cache :core:test :app:testPlayDebugUnitTest $VERSION_ARGS
+
+      - name: Build
+        run: |
+          tasks=":app:assemblePlayDebug :app:assemblePlayRelease"
+          if [ "$SIGNED" = "true" ]; then tasks="$tasks :app:bundlePlayRelease"; fi
+          ./gradlew --no-configuration-cache $tasks $VERSION_ARGS
+
+      - name: Collect outputs
+        run: |
+          mkdir -p dist
+          cp app/build/outputs/apk/play/debug/*.apk dist/pilzscout-${{ github.run_number }}-debug.apk
+          for f in app/build/outputs/apk/play/release/*.apk; do
+            case "$f" in *unsigned*) cp "$f" dist/pilzscout-${{ github.run_number }}-release-unsigned.apk ;;
+                         *) cp "$f" dist/pilzscout-${{ github.run_number }}-release.apk ;; esac
+          done
+          cp app/build/outputs/bundle/playRelease/*.aab dist/ 2>/dev/null || true
+          ls -la dist
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: pilzscout-apk-${{ github.run_number }}
+          path: dist/
+          retention-days: 30
+
+      - name: Test reports
+        if: failure()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports-${{ github.run_number }}
+          path: "**/build/reports/tests/"
+
+  release:
+    name: GitHub release
+    if: startsWith(github.ref, 'refs/tags/v')
+    needs: [pack-tools, apk]
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/download-artifact@v4
+        with:
+          name: pilzscout-apk-${{ github.run_number }}
+          path: dist
+      - uses: softprops/action-gh-release@v2
+        with:
+          files: dist/*
+          generate_release_notes: true
