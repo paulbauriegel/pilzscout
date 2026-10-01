@@ -11,6 +11,7 @@ import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.WindowInsets
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
@@ -210,6 +211,14 @@ fun HistoryMap(
 
     val interactions = remember {
         MapInteractions {
+            // The library seeds zoom, rotation and tilt momentum from the last 100 ms before a
+            // finger lifts, with no minimum speed, and plays it once the last finger is up. After a
+            // pinch that made the map twitch on its own; pan momentum keeps its 250 dp/s threshold.
+            camera {
+                zoom { momentum { enabled = false } }
+                rotate { momentum { enabled = false } }
+                tilt { momentum { enabled = false } }
+            }
             callbacks { click { onUnhandled { selectedId = null; ClickResult.Consume } } }
         }
     }
@@ -223,6 +232,10 @@ fun HistoryMap(
             state = mapState,
             interactions = interactions,
             uiOptions = uiOptions,
+            // The map card already sits above the bottom bar and system insets; without this the
+            // overlay adds the gesture bar height below the attribution button, making its bottom
+            // margin larger than its end margin.
+            contentWindowInsets = WindowInsets(0, 0, 0, 0),
             // Scale bar, compass and the OpenStreetMap attribution (licence requirement); no MapLibre logo.
             overlay = {
                 DisappearingScaleBar(metersPerDp = mapState.viewport?.metersPerDpAtTarget ?: 0.0, zoom = mapState.cameraPosition.zoom, modifier = Modifier.align(Alignment.TopStart))

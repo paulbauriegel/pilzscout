@@ -80,13 +80,38 @@ def sqlite() -> None:
 @app.command()
 def package(
     version: str = typer.Option(..., help="Pack version, e.g. 2026.09.1"),
-    assets: bool = typer.Option(True, help="Also copy into app/src/main/assets/packs"),
+    assets: bool = typer.Option(True, help="Also copy into app/src/bundled/assets/packs (the `bundled` app flavour)"),
     fp16: bool = typer.Option(False, help="Prefer the fp16 model file if present"),
 ) -> None:
     """Assemble packs/<version>/ with manifest.json and copy into the app assets."""
     from .package import run
 
     run(CFG, version=version, copy_to_assets=assets, prefer_fp16=fp16)
+
+
+@app.command()
+def verify(version: str = typer.Option(..., help="Pack version under packs/")) -> None:
+    """Check every file and archive of packs/<version>/ against manifest.json."""
+    from .package import verify as verify_pack
+
+    manifest = verify_pack(CFG.out_dir / version)
+    typer.echo(f"pack {version}: {sum(len(c['files']) for c in manifest['components'])} files OK")
+
+
+@app.command()
+def publish(
+    version: str = typer.Option(..., help="Pack version under packs/, built by `packs package`"),
+    repo: str = typer.Option(None, help="Hugging Face dataset repo, e.g. paulbauriegel/pilzscout-pack-de (default: $PACKS_HF_REPO)"),
+    mirror: Path = typer.Option(None, help="Write a local mirror with the Hub's URL layout instead of uploading"),
+    min_app_version_code: int = typer.Option(1, help="Oldest app versionCode that can read this pack"),
+    private: bool = typer.Option(True, help="Create the repo as private (only relevant on first publish)"),
+    allow_dirty: bool = typer.Option(False, help="Publish a pack built from uncommitted tools/ changes"),
+) -> None:
+    """Upload packs/<version>/ to the Hugging Face Hub (one commit + tag) and update catalog.json."""
+    from .publish import run
+
+    run(CFG, version=version, repo_id=repo or CFG.hf_repo, mirror=mirror,
+        min_app_version_code=min_app_version_code, private=private, allow_dirty=allow_dirty)
 
 
 @app.command()

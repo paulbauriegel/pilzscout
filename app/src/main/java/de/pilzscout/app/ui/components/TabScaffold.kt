@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.navigationBars
 import androidx.compose.foundation.layout.RowScope
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.heightIn
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
@@ -21,14 +22,21 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
+import androidx.compose.material3.MediumFlexibleTopAppBar
+import androidx.compose.material3.TopAppBarDefaults
+import androidx.compose.material3.rememberTopAppBarState
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.input.nestedscroll.nestedScroll
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.compose.ui.res.colorResource
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import androidx.compose.foundation.Image
@@ -36,9 +44,10 @@ import androidx.compose.ui.layout.ContentScale
 import de.pilzscout.app.R
 
 /**
- * Top-level tab chrome from the design reference: brand row (logo + app name + settings), a section
- * header with icon, big title and optional subtitle, and the content. It paints no background: the tab
- * is a page of the home pager, which draws the shared forest backdrop behind it and the bottom bar over it.
+ * Top-level tab chrome: a Material 3 Expressive medium flexible top app bar (tab actions and the settings
+ * gear on the top row, title and subtitle below with the spec's own margins) and the content. The bar is
+ * transparent and collapses as the content scrolls. It paints no background: the tab is a page of the home
+ * pager, which draws the shared forest backdrop behind it and the bottom bar over it.
  */
 @Composable
 fun TabScaffold(
@@ -50,10 +59,39 @@ fun TabScaffold(
     actions: @Composable RowScope.() -> Unit = {},
     content: @Composable (PaddingValues) -> Unit,
 ) {
-    Column(modifier.fillMaxSize().statusBarsPadding()) {
-        BrandRow(onOpenSettings)
-        SectionHeader(title, subtitle, headerIcon, actions)
+    val scrollBehavior = TopAppBarDefaults.exitUntilCollapsedScrollBehavior(rememberTopAppBarState())
+    Column(modifier.fillMaxSize().statusBarsPadding().nestedScroll(scrollBehavior.nestedScrollConnection)) {
+        MediumFlexibleTopAppBar(
+            // Icon, title and subtitle share the title slot so the text stays aligned beside the icon
+            // in both the expanded and the collapsed state.
+            title = {
+                Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+                    if (headerIcon != null) HeaderIcon(headerIcon)
+                    Column {
+                        Text(title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        if (subtitle != null) {
+                            Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                        }
+                    }
+                }
+            },
+            expandedHeight = TopAppBarDefaults.MediumFlexibleAppBarWithSubtitleExpandedHeight,
+            actions = {
+                actions()
+                IconButton(onClick = onOpenSettings) { Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.action_settings)) }
+            },
+            windowInsets = WindowInsets(0.dp),
+            colors = TopAppBarDefaults.topAppBarColors(containerColor = Color.Transparent, scrolledContainerColor = Color.Transparent),
+            scrollBehavior = scrollBehavior,
+        )
         Box(Modifier.fillMaxSize()) { content(PaddingValues(bottom = floatingNavBarInset())) }
+    }
+}
+
+@Composable
+private fun HeaderIcon(icon: ImageVector) {
+    Box(Modifier.size(44.dp).clip(MaterialTheme.shapes.extraLarge).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
+        Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
     }
 }
 
@@ -72,7 +110,7 @@ fun BrandRow(onOpenSettings: (() -> Unit)?, leading: @Composable (() -> Unit)? =
             painterResource(R.drawable.brand_logo),
             contentDescription = null,
             contentScale = ContentScale.Crop,
-            modifier = Modifier.size(34.dp).clip(MaterialTheme.shapes.extraLarge),
+            modifier = Modifier.size(34.dp).clip(MaterialTheme.shapes.extraLarge).background(colorResource(R.color.ic_launcher_background)).padding(3.dp),
         )
         Text(stringResource(R.string.app_name), style = MaterialTheme.typography.titleMedium, fontWeight = FontWeight.SemiBold, modifier = Modifier.padding(start = 10.dp).weight(1f))
         if (onOpenSettings != null) {
@@ -81,18 +119,39 @@ fun BrandRow(onOpenSettings: (() -> Unit)?, leading: @Composable (() -> Unit)? =
     }
 }
 
+/**
+ * Header row laid out like a Material 3 top app bar on a compact window: 16dp screen margins, a 64dp
+ * minimum row height, 16dp between the leading icon and the text, and trailing icon buttons whose 48dp
+ * touch targets end 4dp from the edge so the glyphs sit on the 16dp margin. Tab-specific [actions] come
+ * first, the settings gear last.
+ */
 @Composable
-fun SectionHeader(title: String, subtitle: String? = null, icon: ImageVector? = null, actions: @Composable RowScope.() -> Unit = {}) {
-    Row(Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 4.dp), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(12.dp)) {
+fun SectionHeader(
+    title: String,
+    subtitle: String? = null,
+    icon: ImageVector? = null,
+    onOpenSettings: (() -> Unit)? = null,
+    actions: @Composable RowScope.() -> Unit = {},
+) {
+    Row(
+        Modifier.fillMaxWidth().heightIn(min = 64.dp).padding(start = 16.dp, end = 4.dp, top = 8.dp, bottom = 8.dp),
+        verticalAlignment = Alignment.CenterVertically,
+        horizontalArrangement = Arrangement.spacedBy(16.dp),
+    ) {
         if (icon != null) {
             Box(Modifier.size(44.dp).clip(MaterialTheme.shapes.extraLarge).background(MaterialTheme.colorScheme.primaryContainer), contentAlignment = Alignment.Center) {
                 Icon(icon, contentDescription = null, tint = MaterialTheme.colorScheme.onPrimaryContainer)
             }
         }
-        Column(Modifier.weight(1f)) {
-            Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold)
-            if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(2.dp)) {
+            Text(title, style = MaterialTheme.typography.headlineSmall, fontWeight = FontWeight.Bold, maxLines = 1, overflow = TextOverflow.Ellipsis)
+            if (subtitle != null) Text(subtitle, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant, maxLines = 2, overflow = TextOverflow.Ellipsis)
         }
-        actions()
+        Row(verticalAlignment = Alignment.CenterVertically) {
+            actions()
+            if (onOpenSettings != null) {
+                IconButton(onClick = onOpenSettings) { Icon(Icons.Outlined.Settings, contentDescription = stringResource(R.string.action_settings)) }
+            }
+        }
     }
 }

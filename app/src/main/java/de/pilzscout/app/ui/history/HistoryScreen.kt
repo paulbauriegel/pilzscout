@@ -142,9 +142,8 @@ fun HistoryScreen(
             headerIcon = Icons.Outlined.History,
             onOpenSettings = onOpenSettings,
             actions = {
-                FilledTonalButton(onClick = { startExport(state.items.map { it.entry.observation.id }.toSet()) }, enabled = state.items.isNotEmpty()) {
-                    Icon(Icons.Outlined.FileUpload, contentDescription = null, Modifier.size(18.dp))
-                    Text(stringResource(R.string.history_export), Modifier.padding(start = 6.dp))
+                IconButton(onClick = { startExport(state.items.map { it.entry.observation.id }.toSet()) }, enabled = state.items.isNotEmpty()) {
+                    Icon(Icons.Outlined.FileUpload, contentDescription = stringResource(R.string.history_export))
                 }
             },
         ) { padding ->

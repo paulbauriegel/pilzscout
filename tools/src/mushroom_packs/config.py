@@ -18,15 +18,18 @@ def _env_path(name: str, default: Path) -> Path:
 class Config:
     # Inputs from the training project (mushroom-hunter/training)
     training_dir: Path = field(default_factory=lambda: _env_path("PACKS_TRAINING_DIR", REPO_DIR.parent / "mushroom-hunter" / "training"))
-    run_name: str = os.environ.get("PACKS_RUN_NAME", "full_vits16_v3_320")
+    run_name: str = os.environ.get("PACKS_RUN_NAME", "full_vits16_v4_384")
     prepared_dir_name: str = os.environ.get("PACKS_PREPARED", "full_500p")
 
     # Working directories
     cache_dir: Path = field(default_factory=lambda: _env_path("PACKS_CACHE_DIR", TOOLS_DIR / "cache"))
     out_dir: Path = field(default_factory=lambda: _env_path("PACKS_OUT_DIR", REPO_DIR / "packs"))
-    assets_dir: Path = field(default_factory=lambda: _env_path("PACKS_ASSETS_DIR", REPO_DIR / "app" / "src" / "main" / "assets" / "packs"))
+    assets_dir: Path = field(default_factory=lambda: _env_path("PACKS_ASSETS_DIR", REPO_DIR / "app" / "src" / "bundled" / "assets" / "packs"))
     schemas_dir: Path = field(default_factory=lambda: _env_path("PACKS_SCHEMAS_DIR", REPO_DIR / "app" / "schemas"))
     res_dir: Path = field(default_factory=lambda: _env_path("PACKS_RES_DIR", REPO_DIR / "app" / "src" / "main" / "res"))
+
+    # Publishing (packs publish)
+    hf_repo: str | None = os.environ.get("PACKS_HF_REPO", "paulbauriegel/pilzscout-pack-de")
 
     # GBIF
     gbif_min_de_occurrences: int = int(os.environ.get("PACKS_GBIF_MIN_DE", "1"))

@@ -23,6 +23,7 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.LinearWavyProgressIndicator
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Switch
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -34,12 +35,14 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.pilzscout.app.R
+import de.pilzscout.app.pack.PackError
 import de.pilzscout.app.pack.PackState
 import de.pilzscout.core.model.PackComponent
 import de.pilzscout.core.model.PackComponentManifest
 
 /**
- * First-launch screen: install the bundled "Germany offline pack" component by component.
+ * First-launch screen: install the "Germany offline pack" component by component, copied from the APK
+ * (`bundled` flavour) or downloaded from the pack repository (`play` flavour).
  * Identification becomes available as soon as model + core species data are installed; the image
  * components keep installing afterwards and the caller may leave this screen ([onReady]).
  */
@@ -60,7 +63,11 @@ fun PackInstallScreen(
         ) {
             Spacer(Modifier.height(24.dp))
             Text(stringResource(R.string.pack_title), style = MaterialTheme.typography.displaySmall)
-            Text(stringResource(R.string.pack_intro), style = MaterialTheme.typography.bodyLarge)
+            Text(
+                if (state.remote) stringResource(R.string.pack_intro_remote, formatBytes(state.missingBytes()))
+                else stringResource(R.string.pack_intro),
+                style = MaterialTheme.typography.bodyLarge,
+            )
             Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
                 Icon(Icons.Outlined.CloudOff, contentDescription = null, tint = MaterialTheme.colorScheme.primary)
                 Text(stringResource(R.string.pack_offline_note), style = MaterialTheme.typography.bodyMedium)
@@ -81,31 +88,72 @@ fun PackInstallScreen(
 /** Component cards + install button. No scrolling of its own, so it can be embedded in Settings. */
 @Composable
 fun PackComponentsContent(state: PackState, viewModel: PackInstallViewModel, modifier: Modifier = Modifier) {
+    val wifiOnly by viewModel.wifiOnly.collectAsStateWithLifecycle()
     Column(modifier, verticalArrangement = Arrangement.spacedBy(12.dp)) {
         val manifest = state.manifest
         if (manifest == null) {
             Text(
-                if (state.loaded) stringResource(R.string.pack_missing_manifest) else stringResource(R.string.pack_loading),
+                when {
+                    !state.loaded -> stringResource(R.string.pack_loading)
+                    state.manifestError != null -> packErrorText(state.manifestError)
+                    else -> stringResource(R.string.pack_missing_manifest)
+                },
                 color = MaterialTheme.colorScheme.error,
             )
+            if (state.remote && state.loaded) {
+                TextButton(onClick = viewModel::checkForUpdates, enabled = !state.checking) { Text(stringResource(R.string.pack_retry)) }
+            }
         } else {
-            manifest.components.filter { it.bundled }.forEach { component ->
+            state.offered.forEach { component ->
                 ComponentCard(component, state, onInstall = { viewModel.install(component.component) }, onRemove = { viewModel.uninstall(component.component) })
             }
         }
+        if (state.remote) {
+            Row(verticalAlignment = Alignment.CenterVertically) {
+                Column(Modifier.weight(1f)) {
+                    Text(stringResource(R.string.pack_wifi_only), style = MaterialTheme.typography.bodyLarge)
+                    Text(stringResource(R.string.pack_wifi_only_summary), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                }
+                Switch(checked = wifiOnly, onCheckedChange = viewModel::setWifiOnly)
+            }
+        }
         val anyInstalling = state.installing.isNotEmpty()
-        val allInstalled = manifest?.components?.filter { it.bundled }?.all { state.isInstalled(it.component) } == true
-        if (!allInstalled) {
+        val allInstalled = manifest != null && state.offered.all { state.isInstalled(it.component) }
+        if (!allInstalled || state.updatesAvailable) {
             Button(
                 onClick = viewModel::installAll,
                 enabled = manifest != null && !anyInstalling,
                 modifier = Modifier.fillMaxWidth().height(56.dp),
                 shapes = ButtonDefaults.shapes(),
             ) {
-                Text(stringResource(if (anyInstalling) R.string.pack_installing else R.string.pack_install_all), style = MaterialTheme.typography.titleMedium)
+                Text(
+                    stringResource(
+                        when {
+                            anyInstalling -> R.string.pack_installing
+                            allInstalled -> R.string.pack_install_updates
+                            else -> R.string.pack_install_all
+                        },
+                    ),
+                    style = MaterialTheme.typography.titleMedium,
+                )
             }
         }
+        if (state.remote && manifest != null) {
+            TextButton(onClick = viewModel::checkForUpdates, enabled = !state.checking && !anyInstalling) {
+                Text(stringResource(if (state.checking) R.string.pack_checking else R.string.pack_check_updates))
+            }
+            state.manifestError?.let { Text(packErrorText(it), style = MaterialTheme.typography.bodySmall, color = MaterialTheme.colorScheme.onSurfaceVariant) }
+        }
     }
+}
+
+@Composable
+fun packErrorText(error: PackError): String = when (error) {
+    PackError.Offline -> stringResource(R.string.pack_error_offline)
+    PackError.WifiRequired -> stringResource(R.string.pack_error_wifi)
+    PackError.NoCompatiblePack -> stringResource(R.string.pack_error_incompatible)
+    is PackError.Storage -> stringResource(R.string.pack_error_storage, formatBytes(error.neededBytes))
+    is PackError.Failed -> stringResource(R.string.pack_error, error.message)
 }
 
 @Composable
@@ -120,7 +168,10 @@ private fun ComponentCard(component: PackComponentManifest, state: PackState, on
                 Column(Modifier.weight(1f)) {
                     Text(componentTitle(kind), style = MaterialTheme.typography.titleMedium)
                     Text(componentDescription(kind), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
-                    Text(formatBytes(component.bytes), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    Text(formatBytes(if (state.remote) component.downloadBytes else component.bytes), style = MaterialTheme.typography.labelMedium, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    component.license?.let {
+                        Text(stringResource(R.string.pack_license, it), style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+                    }
                 }
                 when {
                     installed && state.isOutdated(kind) -> TextButton(onClick = onInstall) { Text(stringResource(R.string.pack_update)) }
@@ -133,7 +184,8 @@ private fun ComponentCard(component: PackComponentManifest, state: PackState, on
                 LinearWavyProgressIndicator(progress = { progress }, modifier = Modifier.fillMaxWidth())
             }
             if (error != null) {
-                Text(stringResource(R.string.pack_error, error), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                Text(packErrorText(error), color = MaterialTheme.colorScheme.error, style = MaterialTheme.typography.bodySmall)
+                if (progress == null && !installed) TextButton(onClick = onInstall) { Text(stringResource(R.string.pack_retry)) }
             }
             if (installed && !component.required) {
                 TextButton(onClick = onRemove) { Text(stringResource(R.string.pack_remove)) }

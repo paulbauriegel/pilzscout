@@ -31,6 +31,17 @@ class FusionTest {
     }
 
     @Test
+    fun maskAllowingNothingIsIgnored() {
+        // A mask with no allowed class must not turn everything into NaN (JSON export would fail).
+        val logits = floatArrayOf(1f, 2f, 3f)
+        val p = Fusion.fuse(listOf(logits), mask = booleanArrayOf(false, false, false))
+        assertTrue(p.all { it.isFinite() })
+        val expected = Fusion.softmax(logits)
+        assertTrue(p.indices.all { close(p[it], expected[it]) })
+        assertTrue(Fusion.softmax(logits, booleanArrayOf(false, false, false)).all { it.isFinite() })
+    }
+
+    @Test
     fun maskedClassesGetZero() {
         val p = Fusion.fuse(listOf(floatArrayOf(10f, 0f, 0f)), mask = booleanArrayOf(false, true, true))
         assertEquals(0f, p[0])

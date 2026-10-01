@@ -9,6 +9,11 @@ local.properties
 .cxx/
 captures/
 
+# Release signing (see README, "Publishing to Google Play")
+keystore.properties
+*.jks
+*.keystore
+
 # IDE
 .idea/
 *.iml
@@ -16,6 +21,7 @@ captures/
 
 # Packs and model artefacts (built by tools/, too large for git)
 packs/
+app/src/bundled/assets/packs/
 app/src/main/assets/packs/
 *.tflite
 *.db
@@ -25,3 +31,6 @@ tools/.venv/
 tools/cache/
 tools/**/__pycache__/
 tools/.pytest_cache/
+
+# Personal camera photos used by GpuInferenceTest when present (contain EXIF metadata)
+app/src/androidTest/assets/gpu/pxl_*.jpg

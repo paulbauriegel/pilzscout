@@ -1,7 +1,6 @@
 package de.pilzscout.app.ui.components
 
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
@@ -16,6 +15,7 @@ import androidx.compose.ui.unit.IntOffset
 import androidx.compose.ui.unit.IntSize
 import androidx.compose.ui.unit.dp
 import de.pilzscout.app.R
+import de.pilzscout.app.ui.theme.LocalDarkTheme
 import kotlin.math.roundToInt
 
 /** The three horizontally tileable forest layers for one theme, rendered by `packs backdrop` in tools/. */
@@ -27,7 +27,7 @@ class ForestLayers(val far: ImageBitmap, val mid: ImageBitmap, val near: ImageBi
  * bitmaps survive detail screens being pushed on top; [imageResource] only remembers within its scope.
  */
 @Composable
-fun rememberForestLayers(dark: Boolean = isSystemInDarkTheme()): ForestLayers {
+fun rememberForestLayers(dark: Boolean = LocalDarkTheme.current): ForestLayers {
     val far = ImageBitmap.imageResource(if (dark) R.drawable.forest_far_dark else R.drawable.forest_far_light)
     val mid = ImageBitmap.imageResource(if (dark) R.drawable.forest_mid_dark else R.drawable.forest_mid_light)
     val near = ImageBitmap.imageResource(if (dark) R.drawable.forest_near_dark else R.drawable.forest_near_light)

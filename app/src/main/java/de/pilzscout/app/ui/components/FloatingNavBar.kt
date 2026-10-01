@@ -1,7 +1,6 @@
 package de.pilzscout.app.ui.components
 
 import androidx.compose.foundation.background
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -24,13 +23,14 @@ import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import de.pilzscout.app.ui.theme.ForestColors
+import de.pilzscout.app.ui.theme.LocalDarkTheme
 
 data class NavItem(val label: String, val selectedIcon: ImageVector, val unselectedIcon: ImageVector)
 
 /** Floating pill-shaped bottom bar in warm dark brown with a sage indicator, as in the design reference. */
 @Composable
 fun FloatingNavBar(items: List<NavItem>, selected: Int, onSelect: (Int) -> Unit, modifier: Modifier = Modifier) {
-    val dark = isSystemInDarkTheme()
+    val dark = LocalDarkTheme.current
     Surface(
         modifier = modifier.navigationBarsPadding().padding(horizontal = 16.dp, vertical = 10.dp),
         shape = MaterialTheme.shapes.extraLarge,
@@ -38,11 +38,12 @@ fun FloatingNavBar(items: List<NavItem>, selected: Int, onSelect: (Int) -> Unit,
         tonalElevation = 0.dp,
         shadowElevation = 6.dp,
     ) {
-        Row(Modifier.fillMaxWidth().height(72.dp).padding(horizontal = 8.dp), horizontalArrangement = Arrangement.SpaceEvenly, verticalAlignment = Alignment.CenterVertically) {
+        Row(Modifier.fillMaxWidth().height(72.dp).padding(horizontal = 8.dp), verticalAlignment = Alignment.CenterVertically) {
             items.forEachIndexed { i, item ->
                 val isSelected = i == selected
                 Column(
                     Modifier
+                        .weight(1f)
                         .clip(MaterialTheme.shapes.large)
                         .selectable(selected = isSelected, onClick = { onSelect(i) }, role = Role.Tab)
                         .padding(horizontal = 12.dp, vertical = 6.dp),

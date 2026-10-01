@@ -88,7 +88,7 @@ fun BrowseScreen(
             val bottom = padding.calculateBottomPadding()
             when (tab) {
                 BrowseTab.SPECIES -> SpeciesList(state, bottom, onOpenSpecies)
-                BrowseTab.GROUPS -> GroupsList(groups, bottom, viewModel::selectFamily, viewModel::selectGenus) onOpenSpecies
+                BrowseTab.GROUPS -> GroupsList(groups, bottom, viewModel::selectFamily, viewModel::selectGenus, onOpenSpecies)
             }
         }
     }

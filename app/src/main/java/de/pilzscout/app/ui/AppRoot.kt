@@ -1,5 +1,6 @@
 package de.pilzscout.app.ui
 
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -12,6 +13,7 @@ import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.pilzscout.app.ui.components.LocalSpeciesImages
 import de.pilzscout.app.ui.navigation.AppNavDisplay
 import de.pilzscout.app.ui.pack.PackInstallScreen
+import de.pilzscout.app.settings.ThemeMode
 import de.pilzscout.app.ui.pack.PackInstallViewModel
 import de.pilzscout.app.ui.settings.SettingsViewModel
 import de.pilzscout.app.ui.theme.PilzScoutTheme
@@ -20,7 +22,13 @@ import de.pilzscout.app.ui.theme.PilzScoutTheme
 fun AppRoot() {
     val settingsViewModel: SettingsViewModel = hiltViewModel()
     val dynamic by settingsViewModel.dynamicColor.collectAsStateWithLifecycle()
-    PilzScoutTheme(dynamicColor = dynamic) {
+    val themeMode by settingsViewModel.themeMode.collectAsStateWithLifecycle()
+    val dark = when (themeMode) {
+        ThemeMode.SYSTEM -> isSystemInDarkTheme()
+        ThemeMode.LIGHT -> false
+        ThemeMode.DARK -> true
+    }
+    PilzScoutTheme(darkTheme = dark, dynamicColor = dynamic) {
         Surface(modifier = Modifier.fillMaxSize(), color = MaterialTheme.colorScheme.background) {
             CompositionLocalProvider(LocalSpeciesImages provides settingsViewModel.speciesImages) {
                 val packViewModel: PackInstallViewModel = hiltViewModel()

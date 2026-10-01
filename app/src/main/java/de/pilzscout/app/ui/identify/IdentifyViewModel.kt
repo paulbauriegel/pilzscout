@@ -7,6 +7,7 @@ import dagger.hilt.android.lifecycle.HiltViewModel
 import de.pilzscout.app.identify.Draft
 import de.pilzscout.app.identify.DraftRepository
 import de.pilzscout.app.identify.PhotoIntake
+import de.pilzscout.app.identify.PhotoMetadataReader
 import de.pilzscout.app.location.DeviceLocationProvider
 import de.pilzscout.app.location.PlaceResolver
 import de.pilzscout.app.ml.ClassifierProvider
@@ -20,6 +21,7 @@ import javax.inject.Inject
 class IdentifyViewModel @Inject constructor(
     private val drafts: DraftRepository,
     private val intake: PhotoIntake,
+    private val metadataReader: PhotoMetadataReader,
     private val location: DeviceLocationProvider,
     private val places: PlaceResolver,
     classifierProvider: ClassifierProvider,
@@ -38,6 +40,9 @@ class IdentifyViewModel @Inject constructor(
             drafts.setLocation(loc, place?.name)
         }
     }
+
+    /** Media location access is asked for before the gallery opens so imported photos keep their GPS tags. */
+    fun needsMediaLocationPermission() = metadataReader.needsPermission()
 
     fun removeLocation() = drafts.setIncludeLocation(false)
     fun includeLocation() {

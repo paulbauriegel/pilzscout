@@ -33,6 +33,18 @@
     <string name="pack_remove">Entfernen</string>
     <string name="pack_installed">Installiert</string>
     <string name="pack_error">Installation fehlgeschlagen: %1$s</string>
+    <string name="pack_intro_remote">Lade die Offline-Daten einmalig herunter (%1$s). Danach funktioniert die Bestimmung ohne Verbindung. Die Daten stammen aus dem PilzScout-Paketarchiv auf Hugging Face; deine Fotos und Ergebnisse werden nie hochgeladen.</string>
+    <string name="pack_wifi_only">Nur über WLAN herunterladen</string>
+    <string name="pack_wifi_only_summary">Vor dem Download auf ein nicht getaktetes Netz warten</string>
+    <string name="pack_check_updates">Nach Updates suchen</string>
+    <string name="pack_checking">Wird geprüft…</string>
+    <string name="pack_install_updates">Updates installieren</string>
+    <string name="pack_retry">Erneut versuchen</string>
+    <string name="pack_license">Lizenz: %1$s</string>
+    <string name="pack_error_offline">Keine Internetverbindung. Der Download startet automatisch, sobald du online bist.</string>
+    <string name="pack_error_wifi">Warte auf WLAN (nur über WLAN ist aktiv).</string>
+    <string name="pack_error_incompatible">Für diese App-Version ist kein Offline-Paket verfügbar. Bitte aktualisiere PilzScout.</string>
+    <string name="pack_error_storage">Nicht genug freier Speicher (%1$s benötigt).</string>
     <string name="pack_continue">Mit der Bestimmung beginnen</string>
     <string name="pack_continue_hint">Übrige Komponenten werden im Hintergrund weiter installiert.</string>
     <string name="pack_notification_channel">Installation des Offline-Pakets</string>
@@ -228,7 +240,7 @@
     <string name="history_selected">%1$d ausgewählt</string>
     <string name="history_clear_selection">Auswahl aufheben</string>
     <string name="history_select_all">Alle auswählen</string>
-    <string name="history_export">Exportieren</string>
+    <string name="history_export">Export</string>
     <string name="history_delete">Löschen</string>
     <plurals name="history_delete_confirm">
         <item quantity="one">Diese Beobachtung mit ihren Fotos löschen? Das lässt sich nicht rückgängig machen.</item>
@@ -245,10 +257,14 @@
     <string name="settings_model_ready">Version %1$s · %2$s · %3$s · Eingabe %4$d px · %5$d Klassen · %6$s</string>
     <string name="settings_model_not_loaded">Der Klassifikator wird bei der ersten Bestimmung geladen.</string>
     <string name="settings_gpu">GPU-Beschleunigung nutzen</string>
-    <string name="settings_gpu_summary">Experimentell. Fällt auf die CPU zurück, wenn das Modell nicht für die GPU kompiliert werden kann.</string>
-    <string name="settings_about_body">PilzScout ist eine Offline-App zur Pilzbestimmung und Klassifikator-Auswertung für Deutschland. Iss niemals einen Pilz aufgrund eines App-Ergebnisses.\n\nDaten: FungiTastic (Picek et al., CVPRW 2025; Atlas der dänischen Pilze), CC BY 4.0. Wikipedia-Artikelauszüge und Vorschaubilder, CC BY-SA 4.0, mit Versionsangabe je Artikel. Nachweise in Deutschland aus GBIF-Vorkommensdaten. Klassifikator: DINOv3 ViT-S/16, auf FungiTastic feinabgestimmt (Version siehe Modellinformationen).</string>
+    <string name="settings_gpu_summary">Experimentell. Führt das Modell auf der GPU aus: halbe Genauigkeit (mit voller Genauigkeit beim Aufsummieren) bei dafür kalibrierten Modellen, sonst volle Genauigkeit. Wechselt selbstständig zurück, wenn das Modell nicht für die GPU kompiliert werden kann oder ungültige Zahlen liefert.</string>
+    <string name="settings_gpu_fallback_compile">GPU-Beschleunigung nicht verfügbar: Das Modell konnte nicht für die GPU dieses Geräts kompiliert werden, daher wird die CPU verwendet.</string>
+    <string name="settings_gpu_fallback_nan">GPU-Beschleunigung wurde abgeschaltet: Die GPU hat für dieses Modell ungültige Zahlen geliefert, daher wird die CPU verwendet.</string>
+    <string name="settings_gpu_fallback_fp16">Die GPU rechnet in voller Genauigkeit: Halbe Genauigkeit hat für dieses Modell ungültige Zahlen geliefert.</string>
+    <string name="settings_about_body">PilzScout ist eine Offline-App zur Pilzbestimmung und Klassifikator-Auswertung für Deutschland. Iss niemals einen Pilz aufgrund eines App-Ergebnisses.\n\nDaten: FungiTastic (Picek et al., CVPRW 2025; Fotos aus dem Atlas der dänischen Pilze), CC BY-NC-SA 4.0, nur nicht-kommerzielle Nutzung. Wikipedia-Artikelauszüge und Vorschaubilder, CC BY-SA 4.0 (einzelne Wikimedia-Commons-Dateien haben eigene Lizenzen), mit Versionsangabe je Artikel. Ortsnamen von GeoNames, CC BY 4.0. Nachweise in Deutschland aus GBIF-Vorkommensdaten. Klassifikator: DINOv3 ViT-S/16, auf FungiTastic feinabgestimmt (Version siehe Modellinformationen).\n\nBuilt with DINOv3. Der Klassifikator wird unter der DINOv3-Lizenz (ai.meta.com/resources/models-and-libraries/dinov3-license) und, als auf FungiTastic trainiertes Modell, nur zur nicht-kommerziellen Nutzung verbreitet.</string>
     <string name="edibility_title">Speisewert und Gefahr</string>
     <string name="edibility_reference_for">Referenz-Speisewert von %1$s: %2$s</string>
+    <string name="edibility_confusion_title">Verwechslungsgefahr</string>
     <string name="edibility_dangerous_alternatives">Gefährliche Doppelgänger unter den Kandidaten:</string>
     <string name="edibility_confusion_warning">Eine dieser beiden Arten ist gefährlich, die andere nicht. Eine Verwechslung hat hier ernste Folgen.</string>
     <string name="edibility_disclaimer">Das beschreibt die Art in der Literatur, nicht deinen Pilz. Vor dem Verzehr kann nur eine Fachperson die Bestimmung bestätigen.</string>
@@ -292,6 +308,10 @@
     <string name="history_yesterday">Gestern</string>
     <string name="settings_dynamic_color">Systemfarben verwenden</string>
     <string name="settings_dynamic_color_summary">Android-Farbschema statt der Waldpalette</string>
+    <string name="settings_theme">Erscheinungsbild</string>
+    <string name="settings_theme_system">Systemeinstellung</string>
+    <string name="settings_theme_light">Hell</string>
+    <string name="settings_theme_dark">Dunkel</string>
     <string name="species_ft_photos">FungiTastic-Referenzfotos</string>
     <string name="species_ft_photos_note">Fotos aus FungiTastic-Beobachtungen, CC BY 4.0.</string>
     <!-- Guided capture (Neuer Fund) -->

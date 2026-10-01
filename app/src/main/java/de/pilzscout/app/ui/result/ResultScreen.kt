@@ -30,13 +30,12 @@ import androidx.compose.material.icons.filled.CheckCircle
 import androidx.compose.material.icons.filled.ExpandLess
 import androidx.compose.material.icons.filled.ExpandMore
 import androidx.compose.material.icons.outlined.CloudOff
+import androidx.compose.material.icons.outlined.Edit
 import androidx.compose.material.icons.outlined.Info
 import androidx.compose.material.icons.outlined.PhotoCamera
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
-import androidx.compose.material3.Card
-import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.FilledTonalButton
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -68,6 +67,9 @@ import de.pilzscout.app.R
 import de.pilzscout.app.data.history.PhotoEntity
 import de.pilzscout.app.data.species.SpeciesEntity
 import de.pilzscout.app.ui.components.BrandRow
+import de.pilzscout.app.ui.components.NoticeCard
+import de.pilzscout.app.ui.components.NoticeInset
+import de.pilzscout.app.ui.components.WarningNoticeCard
 import de.pilzscout.app.ui.components.SectionHeader
 import de.pilzscout.app.ui.components.edibilityColors
 import de.pilzscout.app.ui.components.edibilityIcon
@@ -141,22 +143,13 @@ fun ResultScreen(
 
             obs.observation.correctedSpeciesId?.let { correctedId ->
                 val corrected = state.species[correctedId]
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.secondaryContainer)) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(stringResource(R.string.result_corrected_title), style = MaterialTheme.typography.titleMedium)
-                        Text(stringResource(R.string.result_corrected_body, corrected.displayName(), corrected?.binomial ?: correctedId), style = MaterialTheme.typography.bodyMedium)
-                    }
+                NoticeCard(Icons.Outlined.Edit, stringResource(R.string.result_corrected_title), MaterialTheme.colorScheme.secondaryContainer, MaterialTheme.colorScheme.onSecondaryContainer) {
+                    Text(stringResource(R.string.result_corrected_body, corrected.displayName(), corrected?.binomial ?: correctedId), style = MaterialTheme.typography.bodyMedium)
                 }
             }
 
-            Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer), shape = RoundedCornerShape(18.dp)) {
-                Row(Modifier.padding(16.dp), horizontalArrangement = Arrangement.spacedBy(12.dp)) {
-                    Icon(Icons.Outlined.Warning, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
-                    Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                        Text(stringResource(R.string.result_safety_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
-                        Text(stringResource(R.string.result_safety_body), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
-                    }
-                }
+            WarningNoticeCard(Icons.Outlined.Warning, stringResource(R.string.result_safety_title)) {
+                Text(stringResource(R.string.result_safety_body), style = MaterialTheme.typography.bodyMedium)
             }
 
             if (fusion.alternatives.isNotEmpty()) {
@@ -170,15 +163,9 @@ fun ResultScreen(
             }
 
             fusion.recommendedView?.let { view ->
-                Card(colors = CardDefaults.cardColors(containerColor = MaterialTheme.colorScheme.tertiaryContainer), shape = RoundedCornerShape(18.dp)) {
-                    Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                            Icon(Icons.Outlined.PhotoCamera, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
-                            Text(stringResource(R.string.result_recommend_title), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
-                        }
-                        Text(stringResource(R.string.result_recommend_body, view.label()), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
-                        FilledTonalButton(onClick = { onAddPhoto(view) }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.result_recommend_action)) }
-                    }
+                WarningNoticeCard(Icons.Outlined.PhotoCamera, stringResource(R.string.result_recommend_title)) {
+                    Text(stringResource(R.string.result_recommend_body, view.label()), style = MaterialTheme.typography.bodyMedium)
+                    FilledTonalButton(onClick = { onAddPhoto(view) }, shapes = ButtonDefaults.shapes()) { Text(stringResource(R.string.result_recommend_action)) }
                 }
             }
 
@@ -272,22 +259,24 @@ private fun AlternativeRow(alt: Candidate, sp: SpeciesEntity?, onClick: () -> Un
 fun EdibilityCard(primary: SpeciesEntity?, others: List<SpeciesEntity>) {
     val e = Edibility.parse(primary?.edibility)
     val dangerousOthers = others.filter { Edibility.parse(it.edibility)?.dangerous == true }
-    val worst = (listOfNotNull(e) + dangerousOthers.mapNotNull { Edibility.parse(it.edibility) }).minByOrNull { it.ordinal }
-    val (bg, fg) = edibilityColors(if (worst?.dangerous == true) worst else e)
-    Card(colors = CardDefaults.cardColors(containerColor = bg), shape = RoundedCornerShape(18.dp)) {
-        Column(Modifier.padding(16.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp), verticalAlignment = Alignment.CenterVertically) {
-                Icon(edibilityIcon(if (worst?.dangerous == true) worst else e), contentDescription = null, tint = fg)
-                Text(stringResource(R.string.edibility_title), style = MaterialTheme.typography.titleMedium, color = fg)
+    // Tone and icon describe the predicted species only; dangerous look-alikes get their own inset below.
+    val (bg, fg) = edibilityColors(e)
+    NoticeCard(edibilityIcon(e), stringResource(R.string.edibility_title), bg, fg) {
+        Text(stringResource(R.string.edibility_reference_for, primary.displayName(), edibilityLabel(e)), style = MaterialTheme.typography.bodyLarge, fontWeight = FontWeight.Bold)
+        Text(edibilitySourceLabel(primary?.edibilitySource), style = MaterialTheme.typography.labelSmall)
+        if (dangerousOthers.isNotEmpty()) {
+            val names = dangerousOthers.map { s -> "${s.displayName()} (${edibilityLabel(Edibility.parse(s.edibility)).lowercase()})" }.joinToString()
+            val line = stringResource(R.string.edibility_dangerous_alternatives) + " " + names
+            if (e?.dangerous == true) {
+                // Card is already on the error container; a nested error block would vanish.
+                Text(line, style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            } else {
+                NoticeInset(Icons.Outlined.Warning, stringResource(R.string.edibility_confusion_title), MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer) {
+                    Text(line, style = MaterialTheme.typography.bodyMedium)
+                }
             }
-            Text(stringResource(R.string.edibility_reference_for, primary.displayName(), edibilityLabel(e)), style = MaterialTheme.typography.bodyLarge, color = fg, fontWeight = FontWeight.SemiBold)
-            Text(edibilitySourceLabel(primary?.edibilitySource), style = MaterialTheme.typography.labelSmall, color = fg)
-            if (dangerousOthers.isNotEmpty()) {
-                val names = dangerousOthers.map { s -> "${s.displayName()} (${edibilityLabel(Edibility.parse(s.edibility)).lowercase()})" }
-                Text(stringResource(R.string.edibility_dangerous_alternatives) + " " + names.joinToString(), style = MaterialTheme.typography.bodyMedium, color = fg, fontWeight = FontWeight.Bold)
-            }
-            Text(stringResource(R.string.edibility_disclaimer), style = MaterialTheme.typography.bodySmall, color = fg)
         }
+        Text(stringResource(R.string.edibility_disclaimer), style = MaterialTheme.typography.bodySmall)
     }
 }
 

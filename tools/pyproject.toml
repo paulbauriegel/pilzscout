@@ -15,6 +15,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8"]
+publish = ["huggingface_hub>=0.34"]
 
 [project.scripts]
 packs = "mushroom_packs.cli:app"

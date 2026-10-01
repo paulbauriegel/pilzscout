@@ -32,6 +32,9 @@ object Fusion {
         require(photoLogits.all { it.size == n }) { "all photos must have the same number of classes" }
         require(mask == null || mask.size == n)
         require(prior == null || prior.size == n)
+        // A mask that allows nothing (e.g. a species DB whose class indices do not match this
+        // model) would make every log-softmax NaN; ignore it instead of producing garbage.
+        val mask = mask?.takeIf { m -> m.any { it } }
 
         val score = FloatArray(n)
         for (logits in photoLogits) {
@@ -45,6 +48,7 @@ object Fusion {
     }
 
     fun logSoftmax(logits: FloatArray, mask: BooleanArray? = null): FloatArray {
+        val mask = mask?.takeIf { m -> m.any { it } }
         var max = Float.NEGATIVE_INFINITY
         for (i in logits.indices) if (mask == null || mask[i]) max = maxOf(max, logits[i])
         var sum = 0.0

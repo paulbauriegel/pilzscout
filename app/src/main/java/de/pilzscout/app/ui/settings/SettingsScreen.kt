@@ -31,12 +31,14 @@ import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import de.pilzscout.app.R
 import de.pilzscout.app.settings.AppLanguage
+import de.pilzscout.app.settings.ThemeMode
 import de.pilzscout.app.ui.pack.PackComponentsContent
 import de.pilzscout.app.ui.pack.PackInstallViewModel
 
 @Composable
 fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewModel()) {
     val language by viewModel.language.collectAsStateWithLifecycle()
+    val themeMode by viewModel.themeMode.collectAsStateWithLifecycle()
 
     Scaffold(
         topBar = {
@@ -62,9 +64,20 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                 modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
             )
             Column(Modifier.selectableGroup()) {
-                LanguageOption(AppLanguage.SYSTEM, R.string.settings_language_system, language, viewModel::setLanguage)
-                LanguageOption(AppLanguage.GERMAN, R.string.settings_language_de, language, viewModel::setLanguage)
-                LanguageOption(AppLanguage.ENGLISH, R.string.settings_language_en, language, viewModel::setLanguage)
+                RadioOption(AppLanguage.SYSTEM, R.string.settings_language_system, language, viewModel::setLanguage)
+                RadioOption(AppLanguage.GERMAN, R.string.settings_language_de, language, viewModel::setLanguage)
+                RadioOption(AppLanguage.ENGLISH, R.string.settings_language_en, language, viewModel::setLanguage)
+            }
+            HorizontalDivider(Modifier.padding(vertical = 8.dp))
+            Text(
+                stringResource(R.string.settings_theme),
+                style = MaterialTheme.typography.titleMedium,
+                modifier = Modifier.padding(horizontal = 16.dp, vertical = 12.dp),
+            )
+            Column(Modifier.selectableGroup()) {
+                RadioOption(ThemeMode.SYSTEM, R.string.settings_theme_system, themeMode, viewModel::setThemeMode)
+                RadioOption(ThemeMode.LIGHT, R.string.settings_theme_light, themeMode, viewModel::setThemeMode)
+                RadioOption(ThemeMode.DARK, R.string.settings_theme_dark, themeMode, viewModel::setThemeMode)
             }
             HorizontalDivider(Modifier.padding(vertical = 8.dp))
             Text(
@@ -106,6 +119,19 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
                 }
                 androidx.compose.material3.Switch(checked = useGpu, onCheckedChange = viewModel::setUseGpu)
             }
+            val gpuFallback = (classifier as? de.pilzscout.app.ml.ClassifierState.Ready)?.gpuFallback
+            if (gpuFallback != null) {
+                Text(
+                    when (gpuFallback) {
+                        de.pilzscout.app.ml.GpuFallbackReason.COMPILE_FAILED -> stringResource(R.string.settings_gpu_fallback_compile)
+                        de.pilzscout.app.ml.GpuFallbackReason.NON_FINITE_OUTPUT -> stringResource(R.string.settings_gpu_fallback_nan)
+                        de.pilzscout.app.ml.GpuFallbackReason.FP16_NON_FINITE -> stringResource(R.string.settings_gpu_fallback_fp16)
+                    },
+                    style = MaterialTheme.typography.bodySmall,
+                    color = MaterialTheme.colorScheme.error,
+                    modifier = Modifier.padding(horizontal = 16.dp),
+                )
+            }
             val dynamic by viewModel.dynamicColor.collectAsStateWithLifecycle()
             Row(
                 Modifier.fillMaxWidth().padding(horizontal = 16.dp, vertical = 8.dp),
@@ -127,11 +153,11 @@ fun SettingsScreen(onBack: () -> Unit, viewModel: SettingsViewModel = hiltViewMo
 }
 
 @Composable
-private fun LanguageOption(
-    option: AppLanguage,
+private fun <T> RadioOption(
+    option: T,
     label: Int,
-    selected: AppLanguage,
-    onSelect: (AppLanguage) -> Unit,
+    selected: T,
+    onSelect: (T) -> Unit,
 ) {
     Row(
         Modifier

@@ -26,6 +26,7 @@ import androidx.compose.material.icons.automirrored.filled.ArrowBack
 import androidx.compose.material.icons.filled.AutoAwesome
 import androidx.compose.material.icons.outlined.Compare
 import androidx.compose.material.icons.outlined.Lightbulb
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.FilterChip
 import androidx.compose.material3.Icon
@@ -55,7 +56,10 @@ import de.pilzscout.app.R
 import de.pilzscout.app.data.species.SpeciesEntity
 import de.pilzscout.app.ui.components.BrandRow
 import de.pilzscout.app.ui.components.EdibilityBadge
+import de.pilzscout.app.ui.components.NoticeCard
+import de.pilzscout.app.ui.components.NoticeInset
 import de.pilzscout.app.ui.components.SectionHeader
+import de.pilzscout.app.ui.components.WarningNoticeCard
 import de.pilzscout.app.ui.components.contentLanguage
 import de.pilzscout.app.ui.components.edibilityColors
 import de.pilzscout.app.ui.components.edibilityIcon
@@ -254,27 +258,31 @@ private fun StatementColumn(title: String, statements: List<Statement>, modifier
 private fun EdibilityPairCard(primary: SpeciesEntity, alt: SpeciesEntity?) {
     val ep = Edibility.parse(primary.edibility)
     val ea = Edibility.parse(alt?.edibility)
-    val worst = listOfNotNull(ep, ea).minByOrNull { it.ordinal }
-    val (bg, fg) = edibilityColors(worst)
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(bg).padding(14.dp), verticalArrangement = Arrangement.spacedBy(8.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(edibilityIcon(worst), contentDescription = null, tint = fg)
-            Text(stringResource(R.string.edibility_title), style = MaterialTheme.typography.titleMedium, color = fg)
-        }
+    // Tone follows the primary species; a differing danger level is called out in its own inset.
+    val (bg, fg) = edibilityColors(ep)
+    NoticeCard(edibilityIcon(ep), stringResource(R.string.edibility_title), bg, fg) {
         Row(horizontalArrangement = Arrangement.spacedBy(12.dp)) {
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(primary.displayName(), style = MaterialTheme.typography.labelLarge, color = fg)
+                Text(primary.displayName(), style = MaterialTheme.typography.labelLarge)
                 EdibilityBadge(ep, showUnknown = true)
-                Text(edibilitySourceLabel(primary.edibilitySource), style = MaterialTheme.typography.labelSmall, color = fg)
+                Text(edibilitySourceLabel(primary.edibilitySource), style = MaterialTheme.typography.labelSmall)
             }
             Column(Modifier.weight(1f), verticalArrangement = Arrangement.spacedBy(4.dp)) {
-                Text(alt.displayName(), style = MaterialTheme.typography.labelLarge, color = fg)
+                Text(alt.displayName(), style = MaterialTheme.typography.labelLarge)
                 EdibilityBadge(ea, showUnknown = true)
-                Text(edibilitySourceLabel(alt?.edibilitySource), style = MaterialTheme.typography.labelSmall, color = fg)
+                Text(edibilitySourceLabel(alt?.edibilitySource), style = MaterialTheme.typography.labelSmall)
             }
         }
-        if (ep != null && ea != null && ep.dangerous != ea.dangerous) Text(stringResource(R.string.edibility_confusion_warning), style = MaterialTheme.typography.bodyMedium, color = fg, fontWeight = FontWeight.SemiBold)
-        Text(stringResource(R.string.edibility_disclaimer), style = MaterialTheme.typography.bodySmall, color = fg)
+        if (ep != null && ea != null && ep.dangerous != ea.dangerous) {
+            if (ep.dangerous) {
+                Text(stringResource(R.string.edibility_confusion_warning), style = MaterialTheme.typography.bodyMedium, fontWeight = FontWeight.Bold)
+            } else {
+                NoticeInset(Icons.Outlined.Warning, stringResource(R.string.edibility_confusion_title), MaterialTheme.colorScheme.errorContainer, MaterialTheme.colorScheme.onErrorContainer) {
+                    Text(stringResource(R.string.edibility_confusion_warning), style = MaterialTheme.typography.bodyMedium)
+                }
+            }
+        }
+        Text(stringResource(R.string.edibility_disclaimer), style = MaterialTheme.typography.bodySmall)
     }
 }
 
@@ -282,11 +290,7 @@ private fun EdibilityPairCard(primary: SpeciesEntity, alt: SpeciesEntity?) {
 private fun RecommendationCard(state: ComparisonUiState) {
     val notVisible = state.result?.rows?.filter { it.state == EvidenceState.NOT_VISIBLE }?.mapNotNull { FeatureViews.requiredView(it.feature) }?.distinct().orEmpty()
     if (notVisible.isEmpty()) return
-    Column(Modifier.fillMaxWidth().clip(RoundedCornerShape(18.dp)).background(MaterialTheme.colorScheme.tertiaryContainer).padding(14.dp), verticalArrangement = Arrangement.spacedBy(6.dp)) {
-        Row(verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-            Icon(Icons.Outlined.Lightbulb, contentDescription = null, tint = MaterialTheme.colorScheme.onTertiaryContainer)
-            Text(stringResource(R.string.comparison_recommendation), style = MaterialTheme.typography.titleMedium, color = MaterialTheme.colorScheme.onTertiaryContainer)
-        }
-        notVisible.forEach { v -> Text(stringResource(R.string.result_recommend_body, v.label()), style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onTertiaryContainer) }
+    WarningNoticeCard(Icons.Outlined.Lightbulb, stringResource(R.string.comparison_recommendation)) {
+        notVisible.forEach { v -> Text(stringResource(R.string.result_recommend_body, v.label()), style = MaterialTheme.typography.bodyMedium) }
     }
 }

@@ -37,6 +37,18 @@
     <string name="pack_remove">Remove</string>
     <string name="pack_installed">Installed</string>
     <string name="pack_error">Installation failed: %1$s</string>
+    <string name="pack_intro_remote">Download the offline data once (%1$s). Afterwards identification works without a connection. The data comes from the PilzScout pack repository on Hugging Face; your photos and results are never uploaded.</string>
+    <string name="pack_wifi_only">Download over Wi-Fi only</string>
+    <string name="pack_wifi_only_summary">Wait for an unmetered network before downloading</string>
+    <string name="pack_check_updates">Check for updates</string>
+    <string name="pack_checking">Checking…</string>
+    <string name="pack_install_updates">Install updates</string>
+    <string name="pack_retry">Retry</string>
+    <string name="pack_license">Licence: %1$s</string>
+    <string name="pack_error_offline">No internet connection. The download starts automatically once you are online.</string>
+    <string name="pack_error_wifi">Waiting for Wi-Fi (Wi-Fi only is on).</string>
+    <string name="pack_error_incompatible">No offline pack is available for this app version. Please update PilzScout.</string>
+    <string name="pack_error_storage">Not enough free storage (%1$s needed).</string>
     <string name="pack_continue">Start identifying</string>
     <string name="pack_continue_hint">Remaining components keep installing in the background.</string>
     <string name="pack_notification_channel">Offline pack installation</string>
@@ -256,11 +268,15 @@
     <string name="settings_model_ready">Version %1$s · %2$s · %3$s · input %4$d px · %5$d classes · %6$s</string>
     <string name="settings_model_not_loaded">The classifier loads with the first identification.</string>
     <string name="settings_gpu">Use GPU acceleration</string>
-    <string name="settings_gpu_summary">Experimental. Falls back to CPU if the model cannot be compiled for the GPU.</string>
-    <string name="settings_about_body">PilzScout is an offline mushroom identification and classifier-evaluation app for Germany. Never eat a mushroom based on an app result.\n\nData: FungiTastic (Picek et al., CVPRW 2025; Atlas of Danish Fungi), CC BY 4.0. Wikipedia article extracts and thumbnails, CC BY-SA 4.0, with per-article revision references. Species presence in Germany from GBIF occurrence data. Classifier: DINOv3 ViT-S/16 fine-tuned on FungiTastic (see model information for the version).</string>
+    <string name="settings_gpu_summary">Experimental. Runs the model on the GPU: half precision (with full-precision accumulation) for models calibrated for it, otherwise full precision. Switches back by itself if the model cannot be compiled for the GPU or returns invalid numbers.</string>
+    <string name="settings_gpu_fallback_compile">GPU acceleration is unavailable: the model could not be compiled for this device\u2019s GPU, so the CPU is used.</string>
+    <string name="settings_gpu_fallback_nan">GPU acceleration was switched off: the GPU returned invalid numbers for this model, so the CPU is used.</string>
+    <string name="settings_gpu_fallback_fp16">The GPU runs in full precision: half precision returned invalid numbers for this model.</string>
+    <string name="settings_about_body">PilzScout is an offline mushroom identification and classifier-evaluation app for Germany. Never eat a mushroom based on an app result.\n\nData: FungiTastic (Picek et al., CVPRW 2025; photographs from the Atlas of Danish Fungi), CC BY-NC-SA 4.0, non-commercial use only. Wikipedia article extracts and thumbnails, CC BY-SA 4.0 (individual Wikimedia Commons files carry their own licences), with per-article revision references. Place names from GeoNames, CC BY 4.0. Species presence in Germany from GBIF occurrence data. Classifier: DINOv3 ViT-S/16 fine-tuned on FungiTastic (see model information for the version).\n\nBuilt with DINOv3. The classifier is distributed under the DINOv3 License (ai.meta.com/resources/models-and-libraries/dinov3-license) and, as a model trained on FungiTastic, for non-commercial use only.</string>
     <!-- Edibility (reference information about a species, never a verdict about the photo) -->
     <string name="edibility_title">Edibility and danger</string>
     <string name="edibility_reference_for">Reference edibility of %1$s: %2$s</string>
+    <string name="edibility_confusion_title">Risk of confusion</string>
     <string name="edibility_dangerous_alternatives">Dangerous look-alikes among the candidates:</string>
     <string name="edibility_confusion_warning">One of these two species is dangerous, the other is not. A wrong identification here has serious consequences.</string>
     <string name="edibility_disclaimer">This describes the species in the literature, not your mushroom. Only an expert can confirm an identification before eating.</string>
@@ -305,6 +321,10 @@
     <string name="history_yesterday">Yesterday</string>
     <string name="settings_dynamic_color">Use system colours</string>
     <string name="settings_dynamic_color_summary">Android dynamic colour instead of the forest palette</string>
+    <string name="settings_theme">Appearance</string>
+    <string name="settings_theme_system">System default</string>
+    <string name="settings_theme_light">Light</string>
+    <string name="settings_theme_dark">Dark</string>
     <string name="species_ft_photos">FungiTastic reference photos</string>
     <string name="species_ft_photos_note">Photos from FungiTastic observations, CC BY 4.0.</string>
     <!-- Guided capture (Neuer Fund) -->

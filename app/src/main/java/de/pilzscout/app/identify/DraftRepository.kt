@@ -59,7 +59,28 @@ class DraftRepository @Inject constructor() {
 
     fun setLanguage(language: String) = _draft.update { it.copy(language = language) }
 
-    fun setLocation(location: GeoPoint?, placeName: String? = null) = _draft.update { it.copy(location = location, placeName = placeName, locationRequested = true) }
+    /**
+     * Records the device fix. A position an imported photo already carried wins, because that is where the
+     * mushroom was found, whereas the device fix only says where the phone is now.
+     */
+    fun setLocation(location: GeoPoint?, placeName: String? = null) = _draft.update { d ->
+        if (d.location != null) d.copy(locationRequested = true)
+        else d.copy(location = location, placeName = placeName, locationRequested = true)
+    }
+
+    /**
+     * Fills the draft from an imported photo's EXIF: the capture date when [useDate] (the photo is the
+     * draft's first or only one), and the position when the draft has none yet. Marking the location as
+     * requested keeps the screen from replacing it with the device's current fix.
+     */
+    fun adoptPhotoMetadata(metadata: PhotoMetadata, placeName: String?, useDate: Boolean) = _draft.update { d ->
+        var next = d
+        if (useDate && metadata.takenAt != null) next = next.copy(capturedAt = metadata.takenAt)
+        if (metadata.location != null && next.location == null) {
+            next = next.copy(location = metadata.location, placeName = placeName, locationRequested = true)
+        }
+        next
+    }
     fun setIncludeLocation(include: Boolean) = _draft.update { it.copy(includeLocation = include) }
 
     fun clear() {

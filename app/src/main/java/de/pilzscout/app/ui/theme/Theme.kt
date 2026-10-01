@@ -7,7 +7,12 @@ import androidx.compose.material3.MotionScheme
 import androidx.compose.material3.dynamicDarkColorScheme
 import androidx.compose.material3.dynamicLightColorScheme
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.staticCompositionLocalOf
 import androidx.compose.ui.platform.LocalContext
+
+/** Whether the app theme is dark. Prefer this over isSystemInDarkTheme() so a manual theme choice is honoured. */
+val LocalDarkTheme = staticCompositionLocalOf { false }
 
 @Composable
 fun PilzScoutTheme(
@@ -24,10 +29,12 @@ fun PilzScoutTheme(
         else -> ForestLightColorScheme
     }
 
-    MaterialExpressiveTheme(
-        colorScheme = colorScheme,
-        motionScheme = MotionScheme.expressive(),
-        typography = PilzScoutTypography,
-        content = content,
-    )
+    CompositionLocalProvider(LocalDarkTheme provides darkTheme) {
+        MaterialExpressiveTheme(
+            colorScheme = colorScheme,
+            motionScheme = MotionScheme.expressive(),
+            typography = PilzScoutTypography,
+            content = content,
+        )
+    }
 }

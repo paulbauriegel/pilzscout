@@ -1,3 +1,5 @@
+import java.util.Properties
+
 plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.compose)
@@ -5,6 +7,14 @@ plugins {
     alias(libs.plugins.ksp)
     alias(libs.plugins.hilt)
     alias(libs.plugins.room)
+}
+
+// Release signing for Play uploads. keystore.properties (gitignored) holds storeFile, storePassword,
+// keyAlias and keyPassword; without it release builds stay unsigned. Debug builds keep the debug key,
+// so in-place updates of existing debug installs keep their data.
+val keystoreProperties = Properties().apply {
+    val file = rootProject.file("keystore.properties")
+    if (file.exists()) file.inputStream().use { load(it) }
 }
 
 android {
@@ -22,8 +32,42 @@ android {
         ndk { abiFilters += listOf("arm64-v8a") }
     }
 
+    signingConfigs {
+        if (keystoreProperties.isNotEmpty()) {
+            create("release") {
+                storeFile = rootProject.file(keystoreProperties.getProperty("storeFile"))
+                storePassword = keystoreProperties.getProperty("storePassword")
+                keyAlias = keystoreProperties.getProperty("keyAlias")
+                keyPassword = keystoreProperties.getProperty("keyPassword")
+            }
+        }
+    }
+
+    // Where the offline pack comes from. Both flavours keep applicationId and signing, so switching
+    // between them is an in-place update that keeps the installed pack and the history.
+    flavorDimensions += "packs"
+    productFlavors {
+        // Pack copied into the APK by `packs package` (app/src/bundled/assets/packs); works fully offline.
+        create("bundled") {
+            dimension = "packs"
+            isDefault = true
+            buildConfigField("boolean", "PACK_REMOTE", "false")
+            buildConfigField("String", "PACK_BASE_URL", "\"\"")
+        }
+        // No pack in the APK; downloads it from the Hugging Face dataset repo. This is what goes to Play.
+        create("play") {
+            dimension = "packs"
+            buildConfigField("boolean", "PACK_REMOTE", "true")
+            // -Ppilzscout.packBaseUrl=http://localhost:8000 points a debug build at a `packs publish --mirror`.
+            val repo = providers.gradleProperty("pilzscout.packRepo").getOrElse("paulbauriegel/pilzscout-pack-de")
+            val baseUrl = providers.gradleProperty("pilzscout.packBaseUrl").getOrElse("https://huggingface.co/datasets/$repo")
+            buildConfigField("String", "PACK_BASE_URL", "\"$baseUrl\"")
+        }
+    }
+
     buildTypes {
         release {
+            signingConfigs.findByName("release")?.let { signingConfig = it }
             isMinifyEnabled = true
             isShrinkResources = true
             proguardFiles(getDefaultProguardFile("proguard-android-optimize.txt"), "proguard-rules.pro")

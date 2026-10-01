@@ -3,7 +3,6 @@ package de.pilzscout.app.ui.identify
 import android.Manifest
 import android.text.format.DateFormat
 import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.PickVisualMediaRequest
 import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
@@ -63,6 +62,8 @@ import java.util.Date
 
 
 private val LOCATION_PERMISSIONS = arrayOf(Manifest.permission.ACCESS_FINE_LOCATION, Manifest.permission.ACCESS_COARSE_LOCATION)
+private const val IMAGE_MIME = "image/*"
+private const val MAX_IMPORT = 8
 
 /**
  * "Neuer Fund" on one screen. Before the first photo the card shows a template and guidance; afterwards it
@@ -88,14 +89,27 @@ fun IdentifyScreen(
     val locationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestMultiplePermissions()) { granted ->
         if (granted.values.any { it }) viewModel.includeLocation() else viewModel.removeLocation()
     }
-    val gallery = rememberLauncherForActivityResult(ActivityResultContracts.PickMultipleVisualMedia(8)) { uris ->
-        if (uris.isNotEmpty()) viewModel.importFromGallery(uris)
+    // Photos are picked through ACTION_GET_CONTENT rather than the ACTION_PICK_IMAGES contract on purpose:
+    // the system photo picker serves both, but only the GET_CONTENT flavour of its Uris honours
+    // MediaStore.setRequireOriginal, which is the sole way to read a photo's GPS tags since Android 10.
+    val gallery = rememberLauncherForActivityResult(ActivityResultContracts.GetMultipleContents()) { uris ->
+        if (uris.isNotEmpty()) viewModel.importFromGallery(uris.take(MAX_IMPORT))
     }
     var replaceTarget by rememberSaveable { mutableStateOf<String?>(null) }
-    val replacePicker = rememberLauncherForActivityResult(ActivityResultContracts.PickVisualMedia()) { uri ->
+    val replacePicker = rememberLauncherForActivityResult(ActivityResultContracts.GetContent()) { uri ->
         val target = replaceTarget
         replaceTarget = null
         if (uri != null && target != null) viewModel.replaceFromGallery(target, uri)
+    }
+    // Android strips GPS tags from picked photos unless the app holds ACCESS_MEDIA_LOCATION, so it is asked
+    // for right before the picker opens. The picker opens either way; a refusal only costs the position.
+    val mediaLocationPermission = rememberLauncherForActivityResult(ActivityResultContracts.RequestPermission()) {
+        if (replaceTarget != null) replacePicker.launch(IMAGE_MIME) else gallery.launch(IMAGE_MIME)
+    }
+    val openPicker: () -> Unit = {
+        if (viewModel.needsMediaLocationPermission()) mediaLocationPermission.launch(Manifest.permission.ACCESS_MEDIA_LOCATION)
+        else if (replaceTarget != null) replacePicker.launch(IMAGE_MIME)
+        else gallery.launch(IMAGE_MIME)
     }
     LaunchedEffect(draft.photos.isNotEmpty(), draft.locationRequested) {
         if (draft.photos.isNotEmpty() && !draft.locationRequested && draft.includeLocation) {
@@ -117,7 +131,6 @@ fun IdentifyScreen(
     var selectedPhotoId by rememberSaveable { mutableStateOf<String?>(null) }
     val selected = photos.firstOrNull { it.id == selectedPhotoId }
     val guidance = guidanceFor(photos.size)
-    val imageOnly = PickVisualMediaRequest(ActivityResultContracts.PickVisualMedia.ImageOnly)
 
     TabScaffold(
         title = stringResource(R.string.identify_header),
@@ -155,7 +168,7 @@ fun IdentifyScreen(
                         overflow = TextOverflow.Ellipsis,
                     )
                 }
-                FilledTonalIconButton(onClick = { gallery.launch(imageOnly) }, modifier = Modifier.size(56.dp)) {
+                FilledTonalIconButton(onClick = openPicker, modifier = Modifier.size(56.dp)) {
                     Icon(Icons.Outlined.PhotoLibrary, contentDescription = stringResource(R.string.identify_import))
                 }
             }
@@ -200,7 +213,7 @@ fun IdentifyScreen(
             photo = selected,
             onViewChange = { viewModel.setViewType(selected.id, it) },
             onRetake = { selectedPhotoId = null; onOpenCamera(selected.id) },
-            onReplace = { selectedPhotoId = null; replaceTarget = selected.id; replacePicker.launch(imageOnly) },
+            onReplace = { selectedPhotoId = null; replaceTarget = selected.id; openPicker() },
             onDelete = { selectedPhotoId = null; viewModel.remove(selected.id) },
             onDismiss = { selectedPhotoId = null },
         )

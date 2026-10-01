@@ -7,6 +7,7 @@ import de.pilzscout.app.data.history.ObservationEntity
 import de.pilzscout.app.data.history.PhotoEntity
 import de.pilzscout.app.data.species.SpeciesRepository
 import de.pilzscout.app.ml.ClassifierProvider
+import de.pilzscout.app.ml.NonFiniteLogitsException
 import de.pilzscout.core.identify.Agreement
 import de.pilzscout.core.identify.Candidate
 import de.pilzscout.core.identify.Descriptors
@@ -47,7 +48,7 @@ class IdentifyUseCase @Inject constructor(
 ) {
     suspend fun run(draft: Draft, onProgress: suspend (done: Int, total: Int) -> Unit = { _, _ -> }): String = withContext(Dispatchers.Default) {
         require(draft.photos.isNotEmpty()) { "no photos" }
-        val classifier = classifierProvider.get()
+        var classifier = classifierProvider.get()
         val n = classifier.info.numClasses
         val observationId = UUID.randomUUID().toString()
         val month = Instant.ofEpochMilli(draft.capturedAt).atZone(ZoneId.systemDefault()).monthValue
@@ -62,7 +63,14 @@ class IdentifyUseCase @Inject constructor(
             val s = photoStore.store(observationId, photo.file, photo.viewType, i)
             stored += s
             val input = classifier.preprocessor.prepare(s.file)
-            val out = classifier.classify(input)
+            val out = try {
+                classifier.classify(input)
+            } catch (e: NonFiniteLogitsException) {
+                // The GPU returned NaN/inf: fp16 -> retry in fp32 on the GPU, fp32 -> retry on the CPU (and keep
+                // the GPU off). The preprocessed input does not depend on the accelerator.
+                classifier = classifierProvider.onNonFiniteLogits(classifier)
+                classifier.classify(input)
+            }
             logits += out.logits
             timings += out.inferenceMs
             onProgress(i + 1, draft.photos.size)
