@@ -21,8 +21,8 @@ jobs:
     name: Pack tools (pytest)
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v4
-      - uses: astral-sh/setup-uv@v6
+      - uses: actions/checkout@v7
+      - uses: astral-sh/setup-uv@v10
         with:
           working-directory: tools
       - name: Test
@@ -38,16 +38,15 @@ jobs:
     env:
       VERSION_ARGS: -Ppilzscout.versionCode=${{ github.run_number }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: "21"
 
-      - uses: android-actions/setup-android@v3
-
-      - uses: gradle/actions/setup-gradle@v4
+      # The runner image ships an Android SDK with accepted licences; AGP downloads missing platforms itself.
+      - uses: gradle/actions/setup-gradle@v6
 
       - name: Version name from tag
         if: startsWith(github.ref, 'refs/tags/v')
@@ -91,7 +90,7 @@ jobs:
           cp app/build/outputs/bundle/playRelease/*.aab dist/ 2>/dev/null || true
           ls -la dist
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         with:
           name: pilzscout-apk-${{ github.run_number }}
           path: dist/
@@ -99,7 +98,7 @@ jobs:
 
       - name: Test reports
         if: failure()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: test-reports-${{ github.run_number }}
           path: "**/build/reports/tests/"
@@ -112,11 +111,11 @@ jobs:
     permissions:
       contents: write
     steps:
-      - uses: actions/download-artifact@v4
+      - uses: actions/download-artifact@v8
         with:
           name: pilzscout-apk-${{ github.run_number }}
           path: dist
-      - uses: softprops/action-gh-release@v2
+      - uses: softprops/action-gh-release@v3
         with:
           files: dist/*
           generate_release_notes: true
