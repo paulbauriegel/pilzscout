@@ -215,7 +215,11 @@ def _publish_hub(repo_id: str, manifest: dict, manifest_sha: str, uploads: list[
         api.create_tag(repo_id, repo_type="dataset", tag=tag, revision=revision, exist_ok=True)
         print(f"uploaded pack {version} as {revision} (tag {tag})")
 
-    catalog = merge_catalog(catalog, catalog_entry(manifest, manifest_sha, revision, min_code))
+    merged = merge_catalog(catalog, catalog_entry(manifest, manifest_sha, revision, min_code))
+    if merged == catalog:
+        print("catalog already up to date")
+        return merged
+    catalog = merged
     api.create_commit(
         repo_id,
         repo_type="dataset",
