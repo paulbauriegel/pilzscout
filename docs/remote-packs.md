@@ -1,11 +1,12 @@
 # Remote packs on Hugging Face
 
-**Status (2026-10-01):**
+**Status (2026-10-02):**
 
 - Phases 1–3 are implemented. Tested on the Pixel 7 Pro against a local mirror: update by reuse,
   a full archive download, and a resume after an interrupted download (HTTP 206).
-- Nothing has been uploaded to the Hub yet.
-- Phase 4 (the Play release) and the licence decisions below are still open.
+- Pack 2026.10.1 is published in the public dataset repo `paulbauriegel/pilzscout-pack-de`.
+- CI builds signed `play` APKs and AABs; v0.2.0 is the first GitHub release.
+- Phase 4 (the Play Console listing and review) is still open.
 - The commands are in the README ("Publishing a pack to Hugging Face", "Publishing to Google Play").
 
 Today every pack component ships inside the APK (`app/src/main/assets/packs/`, 176 MB) and
@@ -49,9 +50,9 @@ Yes, with conditions.
     screen and the dataset card now do both.
   - Wikipedia text is CC BY-SA 4.0. Commons thumbnails carry per-file licences, which are not yet
     recorded. GeoNames is CC BY 4.0. Every manifest component has `license` and `attribution`.
-  - Open: `core/species.db` mixes CC BY-SA text with CC BY-NC-SA data, two ShareAlike licences that
-    are not formally compatible. Settle this, or split the component, before the repo is made
-    public. `packs publish` creates the repo as private by default.
+  - `core/species.db` mixes CC BY-SA text with CC BY-NC-SA data, two ShareAlike licences that are
+    not formally compatible. The owner accepted the combined component for the free,
+    non-commercial app (2026-10-02) and the repo was made public. Split it if that changes.
 
 ## Target architecture
 
@@ -167,8 +168,5 @@ Moving pack files from assets to downloads does not touch `files/observations`, 
 
 ## Open questions
 
-- Does the FungiTastic licence, and the licence of the base model, allow public redistribution?
-- Should the repo be public, or gated behind an HF token baked into the app? Public is simpler,
-  and an embedded token protects nothing.
 - Is HF a good enough CDN in the long run, or should the catalog later point to a second mirror
   (Cloudflare R2, GitHub Releases)? A `baseUrls` list in `catalog.json` keeps that open.

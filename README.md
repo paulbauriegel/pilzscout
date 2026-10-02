@@ -195,8 +195,7 @@ Notes:
 - CI sets `versionCode` to the workflow run number, so later CI builds can update earlier ones.
   Local builds keep `versionCode` 1.
 - Only the `play` flavour is built, because the `bundled` pack needs the training data. Its APK
-  downloads the pack from Hugging Face on first launch, which works only once the dataset repo
-  is public.
+  downloads the pack from the public Hugging Face dataset repo on first launch.
 - The CI debug APK is signed with a throwaway key, so it cannot update a locally built debug
   install, and vice versa. Android refuses the update; never uninstall to get around that on the
   Pixel.
@@ -274,16 +273,20 @@ Consequences:
 - The Settings → About text and the dataset card give the attribution, including "Built with
   DINOv3".
 - `core/species.db` mixes CC BY-SA text with CC BY-NC-SA data. The two ShareAlike licences are
-  not formally compatible. Before making the repo public, either get a legal opinion or split
-  the Wikipedia text and the FungiTastic data into separate components.
+  not formally compatible. For a free, non-commercial app the owner accepted the combined
+  component (2026-10-02), and the dataset repo is public. If the app ever goes commercial or the
+  data is reused elsewhere, split the Wikipedia text and the FungiTastic data into separate
+  components.
 - Earlier versions of this README and of the About screen said FungiTastic was CC BY 4.0. That
   was wrong.
 
 ## Follow-ups
 
-- fp16 model export (`litert-torch` 0.9 has no fp16 option; the onnx2tf path would need TensorFlow).
+- Ship the fp16 model. The training export already writes `mushroom_model_fp16.tflite` (about
+  half the size, ~1.7× faster on the Pixel GPU). Check accuracy against `test_vectors.json`, then
+  build with `packs package --fp16` and publish a new pack version.
 - Real online explanation provider behind `ExplanationProvider` (currently a stub).
 - Record per-file Wikimedia Commons licences and authors for the `wiki` thumbnails.
-- Decide on the licence questions above, then make the Hugging Face repo public.
+- Publish the app on Google Play (see "Publishing to Google Play"); CI already builds the signed AAB.
 - History import from the ZIP export (needed before any device can move to a Play-signed install).
 - FungiTastic-Mini segmentation masks (`packs fungitastic --masks <parquet dir>`).
